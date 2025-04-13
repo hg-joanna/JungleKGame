@@ -1,8 +1,24 @@
 # ccprog3
 
 Compile command: 
-javac JungleKingController.java
-javac HomePageGUI.java
+javac JungleKing.java 
+		Board.java 
+		Tile.java 
+		Player.java 
+		Piece.java 
+		Panthera.java 
+		Rat.java
 
 Run command: 
-java HomePageGUI.java
+java JungleKing
+
+
+Notes: 
+
+HomeBase - #
+
+Lake - ~
+
+Trap - ~
+
+Animal pieces - starting letter (but Leopard is P)

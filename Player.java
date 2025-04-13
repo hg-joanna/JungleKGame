@@ -19,7 +19,6 @@ public class Player {
     private Tile homeBaseLoc;
     /**List of traps the player owns */
     private ArrayList<Tile> traps;
-	private Piece selectedPiece;
 
     /**
      * Instantiates a new player with a name
@@ -147,20 +146,6 @@ public class Player {
     public boolean isPlayerTrap(Tile tile)
     {
         return traps.contains(tile);
-    }
-	
-	/**Returns the selected piece of the player
-	* @return piece*/
-	public Piece getSelectedPiece() { //was used in mouse click move tile
-        return selectedPiece;
-    }
-
-	/**
-     * Sets the selected piece of the player
-     * @param selectedPiece selected piece of the player
-     */
-    public void setSelectedPiece(Piece selectedPiece) {
-        this.selectedPiece = selectedPiece;
     }
 
     /**

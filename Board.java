@@ -51,6 +51,21 @@ public class Board {
         }
     }
     
+    /**
+     * Returns the current player whose turn it is.
+     * @return current player as Player object
+     */
+    public Player getCurrentPlayer() {
+        return currentPlayer;
+    }
+
+    /**
+     * Sets the current player whose turn it is.
+     * @param currentPlayer Player object to set as active turn
+     */
+    public void setCurrentPlayer(Player currentPlayer) {
+        this.currentPlayer = currentPlayer;
+    }
 	
 	/**
 	* Initializes pieces to each player

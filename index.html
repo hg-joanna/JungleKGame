@@ -3,25 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jungle King - Online Multiplayer</title>
-    <!-- CheerpJ WebAssembly Engine -->
+    <title>Jungle King</title>
+    <!-- Updated CheerpJ 3.0 CDN Link -->
     <script src="https://cjrtnc.cheerpj.com/cheerpj.js"></script>
 </head>
-<body style="margin: 0; padding: 0; background-color: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh;">
-
-    <div id="game-container"></div>
-
+<body style="margin: 0; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh;">
     <script>
         async function loadGame() {
-            // Initialize CheerpJ display
             await cheerpjInit();
             cheerpjCreateDisplay(1300, 900);
-
-            // Execute main class from the JAR
             cheerpjRunMain("HomePageGUI", "/app/JungleKing.jar");
         }
-
         loadGame();
     </script>
 </body>
-</html> 
+</html>

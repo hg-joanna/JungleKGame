@@ -1,8 +1,17 @@
+const http = require('http');
 const WebSocket = require('ws');
 
-// Use Render's dynamic port, falling back to 8080 for local development
+// Render sets process.env.PORT automatically
 const PORT = process.env.PORT || 8080;
-const wss = new WebSocket.Server({ port: PORT });
+
+// Create standard HTTP server to satisfy Render's health checks
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Jungle King WebSocket Server is Live!');
+});
+
+// Attach WebSocket server to the HTTP server
+const wss = new WebSocket.Server({ server });
 
 const rooms = {};
 
@@ -20,7 +29,6 @@ wss.on('connection', (ws) => {
                     rooms[roomId] = [];
                 }
                 
-                // Prevent duplicate additions
                 if (!rooms[roomId].some(client => client.ws === ws)) {
                     rooms[roomId].push({ ws, playerName });
                 }
@@ -61,7 +69,7 @@ wss.on('connection', (ws) => {
     });
 });
 
-// Ping interval to keep Render connections active
+// Keep-alive ping interval
 const interval = setInterval(() => {
     wss.clients.forEach((ws) => {
         if (ws.isAlive === false) return ws.terminate();
@@ -74,4 +82,7 @@ wss.on('close', () => {
     clearInterval(interval);
 });
 
-console.log(`Jungle King WebSocket Server running on port ${PORT}`);
+// Start listening on process.env.PORT
+server.listen(PORT, () => {
+    console.log(`Jungle King Server running on port ${PORT}`);
+});

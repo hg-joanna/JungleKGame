@@ -13,8 +13,8 @@
             try {
                 await cheerpjInit();
                 cheerpjCreateDisplay(1300, 900);
-                // Pass the absolute path to the jar
-                await cheerpjRunJar("/app/JungleKing.jar");
+                // Use cheerpjRunMain with your class name and JAR path
+                await cheerpjRunMain("HomePageGUI", "/app/JungleKing.jar");
             } catch (err) {
                 console.error("CheerpJ execution error:", err);
             }

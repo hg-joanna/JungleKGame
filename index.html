@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jungle King</title>
-    <!-- Correct CheerpJ 3.0 Loader URL -->
+    <!-- Official CheerpJ 3.0 CDN Loader -->
     <script src="https://cjrtnc.cheerpj.com/3.0/loader.js"></script>
 </head>
 <body style="margin: 0; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh;">
@@ -14,9 +14,9 @@
             if (typeof cheerpjInit === 'function') {
                 await cheerpjInit();
                 cheerpjCreateDisplay(1300, 900);
-                cheerpjRunMain("HomePageGUI", "/app/JungleKing.jar");
+                await cheerpjRunJar("/app/JungleKing.jar");
             } else {
-                console.error("CheerpJ script failed to load properly.");
+                console.error("CheerpJ loader script failed to load.");
             }
         });
     </script>

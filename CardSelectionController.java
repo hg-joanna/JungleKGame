@@ -68,7 +68,7 @@ public class CardSelectionController {
             );
 
             // Connects to default room "room1" on local server; change port or URL as needed
-            new JungleKingController(player1Name, player2Name, firstPlayer, localAssignedPlayerName, "room1", "ws://localhost:8080");
+            new JungleKingController(player1Name, player2Name, firstPlayer, localAssignedPlayerName, "room1", "ws://junglekgame.onrender.com/");
             view.dispose();
         }
     }

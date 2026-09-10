@@ -4,21 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jungle King</title>
-    <!-- Official CheerpJ 3.0 Cloud Runtime Loader -->
-    <script src="https://cjrtnc.leaningtech.com/3.0/loader.js"></script>
+    <!-- Official Versioned CheerpJ Loader Script -->
+    <script src="https://cjrtnc.leaningtech.com/3.1/loader.js"></script>
 </head>
 <body style="margin: 0; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh;">
 
     <script>
-        window.addEventListener('load', async () => {
-            if (typeof cheerpjInit === 'function') {
+        async function runGame() {
+            try {
                 await cheerpjInit();
                 cheerpjCreateDisplay(1300, 900);
                 await cheerpjRunJar("/app/JungleKing.jar");
-            } else {
-                console.error("CheerpJ loader script failed to load.");
+            } catch (err) {
+                console.error("CheerpJ execution error:", err);
             }
-        });
+        }
+
+        runGame();
     </script>
 </body>
 </html>

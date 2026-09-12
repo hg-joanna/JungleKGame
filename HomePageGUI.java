@@ -8,8 +8,8 @@ public class HomePageGUI {
 
         ImageIcon bg = new ImageIcon("Resources/homepage_bg.png");
 
-        System.out.println("Image width: " + bg.getIconWidth());
-        System.out.println("Image height: " + bg.getIconHeight());
+        System.out.println(bg.getIconWidth());
+        System.out.println(bg.getIconHeight());
 
         JLabel label = new JLabel(bg);
         frame.add(label);

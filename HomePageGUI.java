@@ -7,6 +7,10 @@ public class HomePageGUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         ImageIcon bg = new ImageIcon("Resources/homepage_bg.png");
+
+        System.out.println("Image width: " + bg.getIconWidth());
+        System.out.println("Image height: " + bg.getIconHeight());
+
         JLabel label = new JLabel(bg);
         frame.add(label);
 

@@ -5,7 +5,9 @@ public class HomePageGUI {
         JFrame frame = new JFrame("Homepage Test");
         frame.setSize(1300, 900);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(null);
+
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setPreferredSize(new java.awt.Dimension(1300, 900));
 
         // Background
         ImageIcon bg = new ImageIcon(
@@ -14,7 +16,8 @@ public class HomePageGUI {
 
         JLabel backgroundLabel = new JLabel(bg);
         backgroundLabel.setBounds(0, 0, 1300, 900);
-        frame.add(backgroundLabel);
+
+        layeredPane.add(backgroundLabel, Integer.valueOf(0));
 
         // Start button
         ImageIcon startImage = new ImageIcon(
@@ -27,8 +30,11 @@ public class HomePageGUI {
         startButton.setContentAreaFilled(false);
         startButton.setFocusPainted(false);
 
-        frame.add(startButton);
+        layeredPane.add(startButton, Integer.valueOf(1));
 
+        frame.setContentPane(layeredPane);
+        frame.pack();
+        frame.setSize(1300, 900);
         frame.setVisible(true);
     }
 }

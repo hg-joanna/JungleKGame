@@ -1,4 +1,3 @@
-
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,26 +20,35 @@ public class HomePageGUI {
         homepageFrame.setLayout(null);
         homepageFrame.setLocationRelativeTo(null);
 
-        JLabel testLabel = new JLabel("HOMEPAGE TEST");
-        testLabel.setBounds(500, 400, 300, 50);
-        homepageFrame.add(testLabel);
+        JButton startButton = new JButton("START");
+        startButton.setBounds(565, 490, 191, 81);
+        homepageFrame.add(startButton);
+
+        JButton exitButton = new JButton("EXIT");
+        exitButton.setBounds(565, 600, 191, 81);
+        homepageFrame.add(exitButton);
+
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(homepageFrame, "START CLICKED");
+            }
+        });
+
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
 
         homepageFrame.setVisible(true);
     }
 
-    /** Open the RuleFrameGUI after mouse click */
-    public void openRuleFrame() {
-        homepageFrame.dispose();
-        RuleFrameGUI ruleFrame = new RuleFrameGUI(true);
-        ruleFrame.setVisible(true);
-    }
-
     /**
      * Main method
-     * @param args main method
      */
     public static void main(String[] args) {
         new HomePageGUI();
     }
 }
-

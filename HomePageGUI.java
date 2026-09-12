@@ -6,7 +6,9 @@ public class HomePageGUI {
         frame.setSize(1300, 900);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        ImageIcon bg = new ImageIcon("Resources/homepage_bg.png");
+        ImageIcon bg = new ImageIcon(
+            HomePageGUI.class.getResource("/Resources/homepage_bg.png")
+        );
 
         System.out.println(bg.getIconWidth());
         System.out.println(bg.getIconHeight());

@@ -20,6 +20,12 @@ public class HomePageGUI {
         homepageFrame.setLayout(null);
         homepageFrame.setLocationRelativeTo(null);
 
+        JLabel backgroundLabel = new JLabel(
+            new ImageIcon("Resources/homepage_bg.png")
+        );
+        backgroundLabel.setBounds(0, 0, 1300, 900);
+        homepageFrame.add(backgroundLabel);
+
         JButton startButton = new JButton("START");
         startButton.setBounds(565, 490, 191, 81);
         homepageFrame.add(startButton);
@@ -38,7 +44,7 @@ public class HomePageGUI {
         exitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.exit(0);
+                JOptionPane.showMessageDialog(homepageFrame, "EXIT CLICKED");
             }
         });
 

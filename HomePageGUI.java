@@ -21,14 +21,20 @@ public class HomePageGUI {
         homepageFrame.setLayout(null);
         homepageFrame.setLocationRelativeTo(null);
 
-        // Background image
-        JLabel backgroundLabel = new JLabel(
-            new ImageIcon("Resources/homepage_bg.png")
-        );
-        backgroundLabel.setBounds(0, 0, 1300, 900);
-        homepageFrame.add(backgroundLabel);
+        JLayeredPane layer = new JLayeredPane();
+        layer.setBounds(0, 0, 1300, 900);
+        homepageFrame.add(layer);
 
-        // Start button image
+        // Background
+        ImageIcon homepageBG = new ImageIcon(
+            "Resources/homepage_bg.png"
+        );
+
+        JLabel backgroundLabel = new JLabel(homepageBG);
+        backgroundLabel.setBounds(0, 0, 1300, 900);
+        layer.add(backgroundLabel, Integer.valueOf(0));
+
+        // Start button
         ImageIcon startImageIcon = new ImageIcon(
             "Resources/start_button.png"
         );
@@ -39,9 +45,12 @@ public class HomePageGUI {
 
         JButton startButton = new JButton(startImageIcon);
         startButton.setBounds(565, 490, 191, 81);
-        homepageFrame.add(startButton);
+        startButton.setBorderPainted(false);
+        startButton.setContentAreaFilled(false);
+        startButton.setFocusPainted(false);
+        layer.add(startButton, Integer.valueOf(1));
 
-        // Exit button image
+        // Exit button
         ImageIcon exitImageIcon = new ImageIcon(
             "Resources/exit_button.png"
         );
@@ -52,7 +61,10 @@ public class HomePageGUI {
 
         JButton exitButton = new JButton(exitImageIcon);
         exitButton.setBounds(565, 600, 191, 81);
-        homepageFrame.add(exitButton);
+        exitButton.setBorderPainted(false);
+        exitButton.setContentAreaFilled(false);
+        exitButton.setFocusPainted(false);
+        layer.add(exitButton, Integer.valueOf(1));
 
         // Start button action
         startButton.addActionListener(new ActionListener() {

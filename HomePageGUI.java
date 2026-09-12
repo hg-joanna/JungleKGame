@@ -1,4 +1,6 @@
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Represents the graphical user interface of the homepage
@@ -32,7 +34,7 @@ public class HomePageGUI {
         layer.add(backgroundLabel, Integer.valueOf(0));
 
         // start button
-        ImageIcon startImageIcon  = new ImageIcon("Resources/start_button.png");
+        ImageIcon startImageIcon = new ImageIcon("Resources/start_button.png");
         ImageIcon startImageIconHover = new ImageIcon("Resources/start_button_hovered.png");
         JButton startButton = new JButton(startImageIcon);
         // default and hover
@@ -45,7 +47,7 @@ public class HomePageGUI {
         layer.add(startButton, Integer.valueOf(1));
 
         // exit button
-        ImageIcon exitImageIcon  = new ImageIcon("Resources/exit_button.png");
+        ImageIcon exitImageIcon = new ImageIcon("Resources/exit_button.png");
         ImageIcon exitImageIconHover = new ImageIcon("Resources/exit_button_hovered.png");
         JButton exitButton = new JButton(exitImageIcon);
         exitButton.setIcon(exitImageIcon);
@@ -57,16 +59,27 @@ public class HomePageGUI {
         layer.add(exitButton, Integer.valueOf(1));
 
         // action listeners
-        startButton.addActionListener(e -> openRuleFrame());
-        exitButton.addActionListener(e -> System.exit(0));
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openRuleFrame();
+            }
+        });
+
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
 
         homepageFrame.setVisible(true);
     }
 
-	/**Open the RuleFrameGUI after mouse click*/
+    /** Open the RuleFrameGUI after mouse click */
     public void openRuleFrame() {
-        homepageFrame.dispose(); 
-		RuleFrameGUI ruleFrame = new RuleFrameGUI(true);
+        homepageFrame.dispose();
+        RuleFrameGUI ruleFrame = new RuleFrameGUI(true);
         ruleFrame.setVisible(true); // Show the RuleFrame
     }
 

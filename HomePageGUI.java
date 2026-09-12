@@ -24,20 +24,13 @@ public class HomePageGUI {
             HomePageGUI.class.getResource("/Resources/start_button.png")
         );
 
-        JButton startButton = new JButton(startImage);
+        ClickTest startButton = new ClickTest(startImage);
         startButton.setBounds(565, 490, 191, 81);
         startButton.setBorderPainted(false);
         startButton.setContentAreaFilled(false);
         startButton.setFocusPainted(false);
 
         layeredPane.add(startButton, Integer.valueOf(1));
-
-        startButton.addActionListener(new java.awt.event.ActionListener() {
-        
-        public void actionPerformed(java.awt.event.ActionEvent e) {
-                System.out.println("START CLICKED");
-            }
-        });
 
         frame.setContentPane(layeredPane);
         frame.pack();

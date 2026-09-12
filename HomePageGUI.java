@@ -79,8 +79,11 @@ public class HomePageGUI {
     /** Open the RuleFrameGUI after mouse click */
     public void openRuleFrame() {
         homepageFrame.dispose();
-        RuleFrameGUI ruleFrame = new RuleFrameGUI(true);
-        ruleFrame.setVisible(true); // Show the RuleFrame
+
+        JFrame testFrame = new JFrame("Rule Frame Test");
+        testFrame.setSize(600, 400);
+        testFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        testFrame.setVisible(true);
     }
 
     /**

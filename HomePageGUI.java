@@ -1,4 +1,6 @@
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class HomePageGUI {
     public static void main(String[] args) {
@@ -29,6 +31,15 @@ public class HomePageGUI {
         startButton.setBorderPainted(false);
         startButton.setContentAreaFilled(false);
         startButton.setFocusPainted(false);
+
+        startButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(
+                    frame,
+                    "START CLICKED"
+                );
+            }
+        });
 
         layeredPane.add(startButton, Integer.valueOf(1));
 

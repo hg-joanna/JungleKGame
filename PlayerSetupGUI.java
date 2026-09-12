@@ -53,7 +53,6 @@ public class PlayerSetupGUI extends JFrame {
 
         centerPanel.add(Box.createVerticalStrut(150));
 
-        // Player 1 name input
         JLabel player1Label = new JLabel("Enter Player 1 Name:");
         player1Label.setForeground(Color.WHITE);
         player1Label.setFont(new Font("Arial", Font.PLAIN, 18));
@@ -64,7 +63,6 @@ public class PlayerSetupGUI extends JFrame {
         player1NameField.setMaximumSize(new Dimension(300, 40));
         player1NameField.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Player 2 name input
         JLabel player2Label = new JLabel("Enter Player 2 Name:");
         player2Label.setForeground(Color.WHITE);
         player2Label.setFont(new Font("Arial", Font.PLAIN, 18));
@@ -128,7 +126,7 @@ public class PlayerSetupGUI extends JFrame {
 
         JOptionPane.showMessageDialog(
             this,
-            player1Name + " vs " + player2Name
+            "Players confirmed."
         );
 
         new CardSelectionController(player1Name, player2Name);
@@ -138,7 +136,6 @@ public class PlayerSetupGUI extends JFrame {
 
     /**
      * Named listener class for the Confirm button.
-     * Avoids an anonymous inner class for CheerpJ compatibility.
      */
     public static class ConfirmButtonListener implements ActionListener {
 

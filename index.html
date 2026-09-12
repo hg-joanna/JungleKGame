@@ -8,17 +8,22 @@
 </head>
 <body style="margin: 0; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh;">
 
+    <script src="https://cjrtnc.leaningtech.com/latest/loader.js"></script>
+
     <script>
-        async function runGame() {
-            try {
-                await cheerpjInit();
-                cheerpjCreateDisplay(1300, 900);
-                // Use cheerpjRunMain with your class name and JAR path
-                await cheerpjRunMain("HomePageGUI", "/app/JungleKing.jar");
-            } catch (err) {
-                console.error("CheerpJ execution error:", err);
-            }
-        }
+    (async function () {
+        await cheerpjInit({
+            version: 11
+        });
+
+        cheerpjCreateDisplay(1300, 900);
+
+        await cheerpjRunMain(
+            "HomePageGUI",
+            "/app/JungleKing.jar"
+        );
+    })();
+    </script>
 
         runGame();
     </script>

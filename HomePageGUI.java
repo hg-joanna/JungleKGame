@@ -32,6 +32,13 @@ public class HomePageGUI {
 
         layeredPane.add(startButton, Integer.valueOf(1));
 
+        startButton.addActionListener(new java.awt.event.ActionListener() {
+        
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+                System.out.println("START CLICKED");
+            }
+        });
+
         frame.setContentPane(layeredPane);
         frame.pack();
         frame.setSize(1300, 900);

@@ -1,4 +1,4 @@
-import java.net.URI;
+
 import javax.swing.JOptionPane;
 
 public class JungleKingController {
@@ -58,7 +58,6 @@ public class JungleKingController {
 
             this.webSocketClient =
                 new GameWebSocketClient(
-                    new URI(serverUrl),
                     this,
                     roomId,
                     localAssignedPlayerName
@@ -181,9 +180,7 @@ public class JungleKingController {
                     && webSocketClient.isOpen()
                 ) {
 
-                    webSocketClient.sendMove(
-                        payload
-                    );
+                    webSocketClient.sendMove();
                 }
             }
         }

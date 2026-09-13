@@ -388,12 +388,7 @@ public class RoomGUI extends JFrame {
         try {
 
             roomClient =
-                new GameWebSocketClient(
-                    new URI(
-                        SERVER_URL
-                    ),
-                    this
-                );
+                new GameWebSocketClient(this);
 
         } catch (Exception e) {
 

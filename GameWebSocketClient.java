@@ -1,8 +1,3 @@
-import java.net.URI;
-
-/**
- * Handles communication with the Jungle King WebSocket server.
- */
 public class GameWebSocketClient {
 
     private JungleKingController controller;
@@ -11,10 +6,9 @@ public class GameWebSocketClient {
     private String roomId;
     private String playerName;
 
-    private boolean connected = false;
+    private boolean connected;
 
     public GameWebSocketClient(
-        URI serverUri,
         JungleKingController controller,
         String roomId,
         String playerName
@@ -24,24 +18,23 @@ public class GameWebSocketClient {
         this.roomId = roomId;
         this.playerName = playerName;
 
+        connected = false;
+
         System.out.println(
-            "GameWebSocketClient created for game."
+            "GameWebSocketClient created."
         );
     }
 
     public GameWebSocketClient(
-        URI serverUri,
         RoomGUI roomGUI
     ) {
 
         this.roomGUI = roomGUI;
 
-        System.out.println(
-            "GameWebSocketClient created for room."
-        );
+        connected = false;
 
-        roomGUI.updateStatus(
-            "WebSocket setup pending."
+        System.out.println(
+            "GameWebSocketClient created for RoomGUI."
         );
     }
 
@@ -50,8 +43,7 @@ public class GameWebSocketClient {
     ) {
 
         System.out.println(
-            "Create room requested: "
-            + playerName
+            "Create room requested."
         );
 
         if (roomGUI != null) {
@@ -68,8 +60,7 @@ public class GameWebSocketClient {
     ) {
 
         System.out.println(
-            "Join room requested: "
-            + roomCode
+            "Join room requested."
         );
 
         if (roomGUI != null) {
@@ -80,39 +71,22 @@ public class GameWebSocketClient {
         }
     }
 
-    public void sendMove(
-        MovePayload payload
-    ) {
-
-        System.out.println(
-            "Move sending is pending."
-        );
-    }
-
     public boolean isOpen() {
 
         return connected;
     }
 
-    public void processMessage(
-        String message
-    ) {
+    public void sendMove() {
 
         System.out.println(
-            "Server message: "
-            + message
+            "Send move requested."
         );
     }
 
-    public void processRemoteMove(
-        MovePayload payload
-    ) {
+    public void processRemoteMove() {
 
-        if (controller != null) {
-
-            controller.processRemoteMove(
-                payload
-            );
-        }
+        System.out.println(
+            "Remote move received."
+        );
     }
 }

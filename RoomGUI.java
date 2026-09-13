@@ -2,24 +2,20 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Random;
 import javax.swing.*;
 
 public class RoomGUI extends JFrame {
 
-    private JTextField roomCodeField;
-
-    private JLabel titleLabel;
-    private JLabel instructionLabel;
-    private JLabel roomCodeLabel;
-    private JLabel statusLabel;
-
-    private JButton createRoomButton;
-    private JButton joinRoomButton;
-
     private String playerName;
 
+    private JTextField roomCodeField;
+
+    private JLabel statusLabel;
+
     private GameWebSocketClient roomClient;
+
+    private static final String SERVER_URL =
+        "wss://junglekgame.onrender.com/";
 
     public RoomGUI(
         String playerName
@@ -68,9 +64,9 @@ public class RoomGUI extends JFrame {
             backgroundLabel
         );
 
-        titleLabel =
+        JLabel titleLabel =
             new JLabel(
-                "MULTIPLAYER ROOM"
+                "JOIN ROOM"
             );
 
         titleLabel.setForeground(
@@ -90,46 +86,14 @@ public class RoomGUI extends JFrame {
         );
 
         titleLabel.setBounds(
-            350,
-            150,
-            600,
+            400,
+            180,
+            500,
             50
         );
 
         backgroundLabel.add(
             titleLabel
-        );
-
-        instructionLabel =
-            new JLabel(
-                "Create a room or enter a room code to join."
-            );
-
-        instructionLabel.setForeground(
-            Color.WHITE
-        );
-
-        instructionLabel.setFont(
-            new Font(
-                "Arial",
-                Font.PLAIN,
-                18
-            )
-        );
-
-        instructionLabel.setHorizontalAlignment(
-            SwingConstants.CENTER
-        );
-
-        instructionLabel.setBounds(
-            300,
-            215,
-            700,
-            40
-        );
-
-        backgroundLabel.add(
-            instructionLabel
         );
 
         JLabel nameLabel =
@@ -144,7 +108,7 @@ public class RoomGUI extends JFrame {
         nameLabel.setFont(
             new Font(
                 "Arial",
-                Font.BOLD,
+                Font.PLAIN,
                 18
             )
         );
@@ -154,14 +118,46 @@ public class RoomGUI extends JFrame {
         );
 
         nameLabel.setBounds(
-            450,
-            270,
             400,
-            35
+            250,
+            500,
+            40
         );
 
         backgroundLabel.add(
             nameLabel
+        );
+
+        JLabel codeLabel =
+            new JLabel(
+                "Enter Room Code:"
+            );
+
+        codeLabel.setForeground(
+            Color.WHITE
+        );
+
+        codeLabel.setFont(
+            new Font(
+                "Arial",
+                Font.PLAIN,
+                18
+            )
+        );
+
+        codeLabel.setHorizontalAlignment(
+            SwingConstants.CENTER
+        );
+
+        codeLabel.setBounds(
+            400,
+            320,
+            500,
+            40
+        );
+
+        backgroundLabel.add(
+            codeLabel
         );
 
         roomCodeField =
@@ -179,34 +175,27 @@ public class RoomGUI extends JFrame {
             SwingConstants.CENTER
         );
 
-        roomCodeField.setMaximumSize(
-            new Dimension(
-                300,
-                50
-            )
-        );
-
         roomCodeField.setBounds(
             500,
-            350,
+            370,
             300,
-            55
+            50
         );
 
         backgroundLabel.add(
             roomCodeField
         );
 
-        JLabel codeHintLabel =
+        JLabel hintLabel =
             new JLabel(
-                "Enter exactly 4 letters or numbers"
+                "4 letters or numbers"
             );
 
-        codeHintLabel.setForeground(
+        hintLabel.setForeground(
             Color.WHITE
         );
 
-        codeHintLabel.setFont(
+        hintLabel.setFont(
             new Font(
                 "Arial",
                 Font.PLAIN,
@@ -214,27 +203,27 @@ public class RoomGUI extends JFrame {
             )
         );
 
-        codeHintLabel.setHorizontalAlignment(
+        hintLabel.setHorizontalAlignment(
             SwingConstants.CENTER
         );
 
-        codeHintLabel.setBounds(
+        hintLabel.setBounds(
             450,
-            410,
+            425,
             400,
             30
         );
 
         backgroundLabel.add(
-            codeHintLabel
+            hintLabel
         );
 
-        createRoomButton =
+        JButton createButton =
             new JButton(
                 "CREATE ROOM"
             );
 
-        createRoomButton.setFont(
+        createButton.setFont(
             new Font(
                 "Arial",
                 Font.BOLD,
@@ -242,33 +231,33 @@ public class RoomGUI extends JFrame {
             )
         );
 
-        createRoomButton.setBounds(
+        createButton.setBounds(
             390,
-            480,
+            500,
             250,
             60
         );
 
-        createRoomButton.setFocusPainted(
+        createButton.setFocusPainted(
             false
         );
 
-        createRoomButton.addActionListener(
+        createButton.addActionListener(
             new CreateRoomButtonListener(
                 this
             )
         );
 
         backgroundLabel.add(
-            createRoomButton
+            createButton
         );
 
-        joinRoomButton =
+        JButton joinButton =
             new JButton(
                 "JOIN ROOM"
             );
 
-        joinRoomButton.setFont(
+        joinButton.setFont(
             new Font(
                 "Arial",
                 Font.BOLD,
@@ -276,57 +265,25 @@ public class RoomGUI extends JFrame {
             )
         );
 
-        joinRoomButton.setBounds(
+        joinButton.setBounds(
             660,
-            480,
+            500,
             250,
             60
         );
 
-        joinRoomButton.setFocusPainted(
+        joinButton.setFocusPainted(
             false
         );
 
-        joinRoomButton.addActionListener(
+        joinButton.addActionListener(
             new JoinRoomButtonListener(
                 this
             )
         );
 
         backgroundLabel.add(
-            joinRoomButton
-        );
-
-        roomCodeLabel =
-            new JLabel(
-                ""
-            );
-
-        roomCodeLabel.setForeground(
-            Color.WHITE
-        );
-
-        roomCodeLabel.setFont(
-            new Font(
-                "Arial",
-                Font.BOLD,
-                30
-            )
-        );
-
-        roomCodeLabel.setHorizontalAlignment(
-            SwingConstants.CENTER
-        );
-
-        roomCodeLabel.setBounds(
-            350,
-            575,
-            600,
-            50
-        );
-
-        backgroundLabel.add(
-            roomCodeLabel
+            joinButton
         );
 
         statusLabel =
@@ -352,7 +309,7 @@ public class RoomGUI extends JFrame {
 
         statusLabel.setBounds(
             300,
-            650,
+            620,
             700,
             40
         );
@@ -392,22 +349,7 @@ public class RoomGUI extends JFrame {
 
     private void createRoom() {
 
-        String roomCode =
-            generateRoomCode();
-
-        roomCodeField.setText(
-            roomCode
-        );
-
-        roomCodeField.setEditable(
-            false
-        );
-
-        roomCodeLabel.setText(
-            "ROOM CODE: " + roomCode
-        );
-
-        statusLabel.setText(
+        updateStatus(
             "Creating room..."
         );
 
@@ -422,8 +364,8 @@ public class RoomGUI extends JFrame {
 
         } else {
 
-            statusLabel.setText(
-                "Room created. Waiting for server connection..."
+            updateStatus(
+                "Not connected to server."
             );
         }
     }
@@ -442,7 +384,7 @@ public class RoomGUI extends JFrame {
 
             JOptionPane.showMessageDialog(
                 this,
-                "Room code must be exactly 4 letters or numbers.",
+                "Room code must be exactly 4 characters.",
                 "Invalid Room Code",
                 JOptionPane.ERROR_MESSAGE
             );
@@ -466,12 +408,8 @@ public class RoomGUI extends JFrame {
             return;
         }
 
-        roomCodeField.setText(
-            roomCode
-        );
-
-        statusLabel.setText(
-            "Joining room " + roomCode + "..."
+        updateStatus(
+            "Joining room..."
         );
 
         if (
@@ -486,42 +424,10 @@ public class RoomGUI extends JFrame {
 
         } else {
 
-            statusLabel.setText(
+            updateStatus(
                 "Not connected to server."
             );
         }
-    }
-
-    private String generateRoomCode() {
-
-        String characters =
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-        Random random =
-            new Random();
-
-        StringBuilder code =
-            new StringBuilder();
-
-        for (
-            int i = 0;
-            i < 4;
-            i++
-        ) {
-
-            int index =
-                random.nextInt(
-                    characters.length()
-                );
-
-            code.append(
-                characters.charAt(
-                    index
-                )
-            );
-        }
-
-        return code.toString();
     }
 
     public void showCreatedRoom(
@@ -532,12 +438,8 @@ public class RoomGUI extends JFrame {
             roomCode
         );
 
-        roomCodeLabel.setText(
-            "ROOM CODE: " + roomCode
-        );
-
-        statusLabel.setText(
-            "Waiting for another player..."
+        updateStatus(
+            "Waiting for Player 2..."
         );
     }
 
@@ -588,15 +490,6 @@ public class RoomGUI extends JFrame {
 
             gui.joinRoom();
         }
-    }
-
-    public static void main(
-        String[] args
-    ) {
-
-        new RoomGUI(
-            "Player 1"
-        );
     }
 }
 

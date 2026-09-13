@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URI;
 import javax.swing.*;
 
 /**
@@ -15,6 +16,14 @@ public class RoomGUI extends JFrame {
     private JButton joinRoomButton;
     private JLabel roomStatusLabel;
 
+    private RoomWebSocketClient roomClient;
+
+    /**
+     * WebSocket server address.
+     */
+    private static final String SERVER_URL =
+        "wss://junglekgame.onrender.com/";
+
     /**
      * Instantiates the room GUI.
      *
@@ -26,7 +35,9 @@ public class RoomGUI extends JFrame {
 
         setTitle("Jungle King - Room");
         setSize(1300, 900);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(
+            JFrame.EXIT_ON_CLOSE
+        );
         setResizable(false);
         setLocationRelativeTo(null);
 
@@ -68,7 +79,7 @@ public class RoomGUI extends JFrame {
         centerPanel.setOpaque(false);
 
         centerPanel.add(
-            Box.createVerticalStrut(170)
+            Box.createVerticalStrut(150)
         );
 
         JLabel titleLabel =
@@ -91,7 +102,7 @@ public class RoomGUI extends JFrame {
         centerPanel.add(titleLabel);
 
         centerPanel.add(
-            Box.createVerticalStrut(50)
+            Box.createVerticalStrut(40)
         );
 
         StringBuilder playerText =
@@ -122,12 +133,12 @@ public class RoomGUI extends JFrame {
         centerPanel.add(nameLabel);
 
         centerPanel.add(
-            Box.createVerticalStrut(50)
+            Box.createVerticalStrut(40)
         );
 
         JLabel roomCodeLabel =
             new JLabel(
-                "Enter Room Code:"
+                "Room Code"
             );
 
         roomCodeLabel.setForeground(Color.WHITE);
@@ -145,6 +156,35 @@ public class RoomGUI extends JFrame {
         );
 
         centerPanel.add(roomCodeLabel);
+
+        JLabel instructionLabel =
+            new JLabel(
+                "Enter exactly 4 letters or numbers"
+            );
+
+        instructionLabel.setForeground(
+            Color.WHITE
+        );
+
+        instructionLabel.setFont(
+            new Font(
+                "Arial",
+                Font.PLAIN,
+                14
+            )
+        );
+
+        instructionLabel.setAlignmentX(
+            Component.CENTER_ALIGNMENT
+        );
+
+        centerPanel.add(
+            instructionLabel
+        );
+
+        centerPanel.add(
+            Box.createVerticalStrut(10)
+        );
 
         roomCodeField =
             new JTextField();
@@ -197,7 +237,7 @@ public class RoomGUI extends JFrame {
         centerPanel.add(joinRoomButton);
 
         centerPanel.add(
-            Box.createVerticalStrut(30)
+            Box.createVerticalStrut(25)
         );
 
         JLabel orLabel =
@@ -220,7 +260,7 @@ public class RoomGUI extends JFrame {
         centerPanel.add(orLabel);
 
         centerPanel.add(
-            Box.createVerticalStrut(30)
+            Box.createVerticalStrut(25)
         );
 
         createRoomButton =
@@ -249,7 +289,7 @@ public class RoomGUI extends JFrame {
         centerPanel.add(createRoomButton);
 
         centerPanel.add(
-            Box.createVerticalStrut(40)
+            Box.createVerticalStrut(35)
         );
 
         roomStatusLabel =
@@ -257,7 +297,9 @@ public class RoomGUI extends JFrame {
                 "Create a room or enter a room code."
             );
 
-        roomStatusLabel.setForeground(Color.WHITE);
+        roomStatusLabel.setForeground(
+            Color.WHITE
+        );
 
         roomStatusLabel.setFont(
             new Font(
@@ -279,6 +321,54 @@ public class RoomGUI extends JFrame {
         );
 
         setVisible(true);
+
+        connectToServer();
+    }
+
+    /**
+     * Connects this client to the WebSocket server.
+     */
+    private void connectToServer() {
+
+        try {
+
+            roomClient =
+                new RoomWebSocketClient(
+                    new URI(SERVER_URL),
+                    this
+                );
+
+        } catch (Exception e) {
+
+            roomStatusLabel.setText(
+                "Unable to connect to server."
+            );
+
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Handles creating a room.
+     */
+    private void createRoom() {
+
+        if (roomClient == null) {
+
+            roomStatusLabel.setText(
+                "Not connected to server."
+            );
+
+            return;
+        }
+
+        roomStatusLabel.setText(
+            "Creating room..."
+        );
+
+        roomClient.createRoom(
+            playerName
+        );
     }
 
     /**
@@ -287,62 +377,86 @@ public class RoomGUI extends JFrame {
     private void joinRoom() {
 
         String roomCode =
-            roomCodeField.getText().trim();
+            roomCodeField.getText()
+                .trim()
+                .toUpperCase();
 
-        if (roomCode.isEmpty()) {
+        if (
+            roomCode.length() != 4
+        ) {
 
             roomStatusLabel.setText(
-                "Please enter a room code."
+                "Invalid room code. Use exactly 4 letters or numbers."
             );
 
             return;
         }
 
-        StringBuilder status =
-            new StringBuilder();
+        for (
+            int i = 0;
+            i < roomCode.length();
+            i++
+        ) {
 
-        status.append("Joining room ");
-        status.append(roomCode);
-        status.append("...");
+            char character =
+                roomCode.charAt(i);
+
+            boolean valid =
+                (
+                    character >= 'A'
+                    && character <= 'Z'
+                )
+                ||
+                (
+                    character >= '0'
+                    && character <= '9'
+                );
+
+            if (!valid) {
+
+                roomStatusLabel.setText(
+                    "Invalid room code. Use exactly 4 letters or numbers."
+                );
+
+                return;
+            }
+        }
+
+        if (roomClient == null) {
+
+            roomStatusLabel.setText(
+                "Not connected to server."
+            );
+
+            return;
+        }
 
         roomStatusLabel.setText(
-            status.toString()
+            "Joining room..."
+        );
+
+        roomClient.joinRoom(
+            roomCode,
+            playerName
         );
     }
 
     /**
-     * Handles creating a room.
+     * Updates the room status.
+     *
+     * @param message status message
      */
-    private void createRoom() {
+    public void updateStatus(
+        String message
+    ) {
 
         roomStatusLabel.setText(
-            "Creating room..."
+            message
         );
     }
 
     /**
-     * Named listener for Join Room.
-     */
-    public static class JoinRoomButtonListener
-        implements ActionListener {
-
-        private RoomGUI gui;
-
-        public JoinRoomButtonListener(
-            RoomGUI gui
-        ) {
-            this.gui = gui;
-        }
-
-        public void actionPerformed(
-            ActionEvent e
-        ) {
-            gui.joinRoom();
-        }
-    }
-
-    /**
-     * Named listener for Create Room.
+     * Listener for Create Room.
      */
     public static class CreateRoomButtonListener
         implements ActionListener {
@@ -363,11 +477,245 @@ public class RoomGUI extends JFrame {
     }
 
     /**
+     * Listener for Join Room.
+     */
+    public static class JoinRoomButtonListener
+        implements ActionListener {
+
+        private RoomGUI gui;
+
+        public JoinRoomButtonListener(
+            RoomGUI gui
+        ) {
+            this.gui = gui;
+        }
+
+        public void actionPerformed(
+            ActionEvent e
+        ) {
+            gui.joinRoom();
+        }
+    }
+
+    /**
+     * Temporary room WebSocket client.
+     *
+     * This will handle room-specific messages.
+     */
+    public static class RoomWebSocketClient
+        implements java.net.http.WebSocket.Listener {
+
+        private URI serverUri;
+        private RoomGUI gui;
+        private java.net.http.WebSocket socket;
+
+        public RoomWebSocketClient(
+            URI serverUri,
+            RoomGUI gui
+        ) {
+
+            this.serverUri = serverUri;
+            this.gui = gui;
+
+            java.net.http.HttpClient client =
+                java.net.http.HttpClient.newHttpClient();
+
+            client.newWebSocketBuilder()
+                .buildAsync(
+                    serverUri,
+                    this
+                )
+                .thenAccept(
+                    new SocketHandler(this)
+                )
+                .exceptionally(
+                    new ErrorHandler(gui)
+                );
+        }
+
+        public void createRoom(
+            String playerName
+        ) {
+
+            StringBuilder message =
+                new StringBuilder();
+
+            message.append("{");
+            message.append("\"type\":\"CREATE_ROOM\",");
+            message.append("\"playerName\":\"");
+            message.append(playerName);
+            message.append("\"");
+            message.append("}");
+
+            send(message.toString());
+        }
+
+        public void joinRoom(
+            String roomCode,
+            String playerName
+        ) {
+
+            StringBuilder message =
+                new StringBuilder();
+
+            message.append("{");
+            message.append("\"type\":\"JOIN_ROOM\",");
+            message.append("\"roomId\":\"");
+            message.append(roomCode);
+            message.append("\",");
+            message.append("\"playerName\":\"");
+            message.append(playerName);
+            message.append("\"");
+            message.append("}");
+
+            send(message.toString());
+        }
+
+        private void send(
+            String message
+        ) {
+
+            if (socket != null) {
+
+                socket.sendText(
+                    message,
+                    true
+                );
+            }
+        }
+
+        @Override
+        public java.util.concurrent.CompletionStage<?> onText(
+            java.net.http.WebSocket webSocket,
+            CharSequence data,
+            boolean last
+        ) {
+
+            String message =
+                data.toString();
+
+            if (
+                message.contains(
+                    "\"type\":\"ROOM_CREATED\""
+                )
+            ) {
+
+                int codeStart =
+                    message.indexOf(
+                        "\"roomId\":\""
+                    ) + 10;
+
+                int codeEnd =
+                    message.indexOf(
+                        "\"",
+                        codeStart
+                    );
+
+                if (
+                    codeStart > 9
+                    && codeEnd > codeStart
+                ) {
+
+                    String roomCode =
+                        message.substring(
+                            codeStart,
+                            codeEnd
+                        );
+
+                    gui.updateStatus(
+                        "Room created: "
+                        + roomCode
+                        + " - Waiting for another player."
+                    );
+
+                    gui.roomCodeField.setText(
+                        roomCode
+                    );
+                }
+            }
+
+            if (
+                message.contains(
+                    "\"type\":\"ROOM_WAITING\""
+                )
+            ) {
+
+                gui.updateStatus(
+                    "Waiting for another player..."
+                );
+            }
+
+            return java.net.http.WebSocket.Listener
+                .super.onText(
+                    webSocket,
+                    data,
+                    last
+                );
+        }
+
+        public static class SocketHandler
+            implements java.util.function.Consumer<
+                java.net.http.WebSocket
+            > {
+
+            private RoomWebSocketClient client;
+
+            public SocketHandler(
+                RoomWebSocketClient client
+            ) {
+                this.client = client;
+            }
+
+            public void accept(
+                java.net.http.WebSocket socket
+            ) {
+
+                client.socket = socket;
+
+                client.gui.updateStatus(
+                    "Connected to server."
+                );
+            }
+        }
+
+        public static class ErrorHandler
+            implements java.util.function.Function<
+                Throwable,
+                Void
+            > {
+
+            private RoomGUI gui;
+
+            public ErrorHandler(
+                RoomGUI gui
+            ) {
+                this.gui = gui;
+            }
+
+            public Void apply(
+                Throwable error
+            ) {
+
+                gui.updateStatus(
+                    "Unable to connect to server."
+                );
+
+                error.printStackTrace();
+
+                return null;
+            }
+        }
+    }
+
+    /**
      * Main method for testing.
      *
      * @param args main method arguments
      */
     public static void main(String[] args) {
-        new RoomGUI("Test Player");
+
+        new RoomGUI(
+            "Test Player"
+        );
     }
 }

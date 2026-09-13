@@ -165,17 +165,7 @@ public class PlayerSetupGUI extends JFrame {
             return;
         }
 
-        /*
-         * Temporary local flow.
-         *
-         * The room/multiplayer system will be connected here next.
-         * For now, the local player is passed forward as Player 1.
-         */
-        new CardSelectionController(
-            playerName,
-            "Waiting for Player 2",
-            playerName
-        );
+        new RoomGUI(playerName);
 
         dispose();
     }

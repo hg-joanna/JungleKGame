@@ -25,15 +25,145 @@
 <body>
 
 <script>
+
+let jungleWebSocket = null;
+
+
+/*
+ * Java:
+ * GameWebSocketClient.connect(String)
+ */
+async function Java_GameWebSocketClient_connect(
+    lib,
+    self,
+    serverUrl
+) {
+
+    console.log(
+        "Connecting to:",
+        serverUrl
+    );
+
+    jungleWebSocket =
+        new WebSocket(serverUrl);
+
+    jungleWebSocket.onopen =
+        async function () {
+
+            console.log(
+                "WebSocket connected."
+            );
+
+            await self.onOpen();
+        };
+
+    jungleWebSocket.onmessage =
+        async function (event) {
+
+            console.log(
+                "WebSocket received:",
+                event.data
+            );
+
+            await self.onMessage(
+                event.data
+            );
+        };
+
+    jungleWebSocket.onerror =
+        async function () {
+
+            console.error(
+                "WebSocket error."
+            );
+
+            await self.onError(
+                "Browser WebSocket error"
+            );
+        };
+
+    jungleWebSocket.onclose =
+        async function () {
+
+            console.log(
+                "WebSocket closed."
+            );
+
+            await self.onClose();
+        };
+}
+
+
+/*
+ * Java:
+ * GameWebSocketClient.sendNative(String)
+ */
+async function Java_GameWebSocketClient_sendNative(
+    lib,
+    self,
+    message
+) {
+
+    if (
+        jungleWebSocket != null
+        && jungleWebSocket.readyState
+            === WebSocket.OPEN
+    ) {
+
+        jungleWebSocket.send(
+            message
+        );
+
+        console.log(
+            "WebSocket sent:",
+            message
+        );
+    }
+}
+
+
+/*
+ * Java:
+ * GameWebSocketClient.isNativeOpen()
+ */
+async function Java_GameWebSocketClient_isNativeOpen(
+    lib,
+    self
+) {
+
+    return (
+        jungleWebSocket != null
+        && jungleWebSocket.readyState
+            === WebSocket.OPEN
+    );
+}
+
+
 (async function () {
 
-    console.log("CheerpJ is initializing");
+    console.log(
+        "CheerpJ is initializing"
+    );
 
     await cheerpjInit({
-        version: 11
+
+        version: 11,
+
+        natives: {
+
+            Java_GameWebSocketClient_connect,
+
+            Java_GameWebSocketClient_sendNative,
+
+            Java_GameWebSocketClient_isNativeOpen
+
+        }
+
     });
 
-    console.log("CheerpJ runtime ready");
+    console.log(
+        "CheerpJ runtime ready"
+    );
 
     cheerpjCreateDisplay(
         1300,

@@ -1,35 +1,34 @@
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URI;
+import java.util.Random;
 import javax.swing.*;
 
-/**
- * Represents the room creation and joining interface.
- */
 public class RoomGUI extends JFrame {
+
+    private JTextField roomCodeField;
+
+    private JLabel titleLabel;
+    private JLabel instructionLabel;
+    private JLabel roomCodeLabel;
+    private JLabel statusLabel;
+
+    private JButton createRoomButton;
+    private JButton joinRoomButton;
 
     private String playerName;
 
-    private JTextField roomCodeField;
-    private JButton createRoomButton;
-    private JButton joinRoomButton;
-    private JLabel roomStatusLabel;
-
     private GameWebSocketClient roomClient;
-
-    private static final String SERVER_URL =
-        "wss://junglekgame.onrender.com/";
 
     public RoomGUI(
         String playerName
     ) {
 
-        this.playerName =
-            playerName;
+        this.playerName = playerName;
 
         setTitle(
-            "Jungle King - Room"
+            "Jungle King - Join Room"
         );
 
         setSize(
@@ -42,58 +41,36 @@ public class RoomGUI extends JFrame {
         );
 
         setResizable(false);
+
         setLocationRelativeTo(null);
 
-        ImageIcon backgroundIcon =
-            new ImageIcon(
-                getClass().getResource(
-                    "/Resources/bg_darker.png"
-                )
-            );
-
-        JLabel backgroundLabel =
-            new JLabel(
-                backgroundIcon
-            );
-
-        backgroundLabel.setLayout(
-            new BorderLayout()
-        );
-
-        add(
-            backgroundLabel
-        );
-
         ImageIcon logo =
-            new ImageIcon(
-                getClass().getResource(
-                    "/Resources/logo.png"
-                )
+            getResourceIcon(
+                "/Resources/logo.png"
             );
 
         setIconImage(
             logo.getImage()
         );
 
-        JPanel centerPanel =
-            new JPanel();
-
-        centerPanel.setLayout(
-            new BoxLayout(
-                centerPanel,
-                BoxLayout.Y_AXIS
-            )
-        );
-
-        centerPanel.setOpaque(false);
-
-        centerPanel.add(
-            Box.createVerticalStrut(150)
-        );
-
-        JLabel titleLabel =
+        JLabel backgroundLabel =
             new JLabel(
-                "Jungle King"
+                getResourceIcon(
+                    "/Resources/bg_darker.png"
+                )
+            );
+
+        backgroundLabel.setLayout(
+            null
+        );
+
+        setContentPane(
+            backgroundLabel
+        );
+
+        titleLabel =
+            new JLabel(
+                "MULTIPLAYER ROOM"
             );
 
         titleLabel.setForeground(
@@ -108,86 +85,24 @@ public class RoomGUI extends JFrame {
             )
         );
 
-        titleLabel.setAlignmentX(
-            Component.CENTER_ALIGNMENT
+        titleLabel.setHorizontalAlignment(
+            SwingConstants.CENTER
         );
 
-        centerPanel.add(
+        titleLabel.setBounds(
+            350,
+            150,
+            600,
+            50
+        );
+
+        backgroundLabel.add(
             titleLabel
         );
 
-        centerPanel.add(
-            Box.createVerticalStrut(40)
-        );
-
-        StringBuilder playerText =
-            new StringBuilder();
-
-        playerText.append(
-            "Player: "
-        );
-
-        playerText.append(
-            playerName
-        );
-
-        JLabel nameLabel =
+        instructionLabel =
             new JLabel(
-                playerText.toString()
-            );
-
-        nameLabel.setForeground(
-            Color.WHITE
-        );
-
-        nameLabel.setFont(
-            new Font(
-                "Arial",
-                Font.PLAIN,
-                20
-            )
-        );
-
-        nameLabel.setAlignmentX(
-            Component.CENTER_ALIGNMENT
-        );
-
-        centerPanel.add(
-            nameLabel
-        );
-
-        centerPanel.add(
-            Box.createVerticalStrut(40)
-        );
-
-        JLabel roomCodeLabel =
-            new JLabel(
-                "Room Code"
-            );
-
-        roomCodeLabel.setForeground(
-            Color.WHITE
-        );
-
-        roomCodeLabel.setFont(
-            new Font(
-                "Arial",
-                Font.PLAIN,
-                18
-            )
-        );
-
-        roomCodeLabel.setAlignmentX(
-            Component.CENTER_ALIGNMENT
-        );
-
-        centerPanel.add(
-            roomCodeLabel
-        );
-
-        JLabel instructionLabel =
-            new JLabel(
-                "Enter exactly 4 letters or numbers"
+                "Create a room or enter a room code to join."
             );
 
         instructionLabel.setForeground(
@@ -198,20 +113,55 @@ public class RoomGUI extends JFrame {
             new Font(
                 "Arial",
                 Font.PLAIN,
-                14
+                18
             )
         );
 
-        instructionLabel.setAlignmentX(
-            Component.CENTER_ALIGNMENT
+        instructionLabel.setHorizontalAlignment(
+            SwingConstants.CENTER
         );
 
-        centerPanel.add(
+        instructionLabel.setBounds(
+            300,
+            215,
+            700,
+            40
+        );
+
+        backgroundLabel.add(
             instructionLabel
         );
 
-        centerPanel.add(
-            Box.createVerticalStrut(10)
+        JLabel nameLabel =
+            new JLabel(
+                "Player: " + playerName
+            );
+
+        nameLabel.setForeground(
+            Color.WHITE
+        );
+
+        nameLabel.setFont(
+            new Font(
+                "Arial",
+                Font.BOLD,
+                18
+            )
+        );
+
+        nameLabel.setHorizontalAlignment(
+            SwingConstants.CENTER
+        );
+
+        nameLabel.setBounds(
+            450,
+            270,
+            400,
+            35
+        );
+
+        backgroundLabel.add(
+            nameLabel
         );
 
         roomCodeField =
@@ -220,219 +170,269 @@ public class RoomGUI extends JFrame {
         roomCodeField.setFont(
             new Font(
                 "Arial",
-                Font.PLAIN,
-                18
+                Font.BOLD,
+                24
             )
+        );
+
+        roomCodeField.setHorizontalAlignment(
+            SwingConstants.CENTER
         );
 
         roomCodeField.setMaximumSize(
             new Dimension(
                 300,
-                40
+                50
             )
         );
 
-        roomCodeField.setAlignmentX(
-            Component.CENTER_ALIGNMENT
+        roomCodeField.setBounds(
+            500,
+            350,
+            300,
+            55
         );
 
-        centerPanel.add(
+        backgroundLabel.add(
             roomCodeField
         );
 
-        centerPanel.add(
-            Box.createVerticalStrut(20)
-        );
-
-        joinRoomButton =
-            new JButton(
-                "Join Room"
-            );
-
-        joinRoomButton.setFont(
-            new Font(
-                "Arial",
-                Font.PLAIN,
-                18
-            )
-        );
-
-        joinRoomButton.setPreferredSize(
-            new Dimension(
-                180,
-                45
-            )
-        );
-
-        joinRoomButton.setAlignmentX(
-            Component.CENTER_ALIGNMENT
-        );
-
-        joinRoomButton.addActionListener(
-            new JoinRoomButtonListener(this)
-        );
-
-        centerPanel.add(
-            joinRoomButton
-        );
-
-        centerPanel.add(
-            Box.createVerticalStrut(25)
-        );
-
-        JLabel orLabel =
+        JLabel codeHintLabel =
             new JLabel(
-                "OR"
+                "Enter exactly 4 letters or numbers"
             );
 
-        orLabel.setForeground(
+        codeHintLabel.setForeground(
             Color.WHITE
         );
 
-        orLabel.setFont(
+        codeHintLabel.setFont(
             new Font(
                 "Arial",
                 Font.PLAIN,
-                18
+                15
             )
         );
 
-        orLabel.setAlignmentX(
-            Component.CENTER_ALIGNMENT
+        codeHintLabel.setHorizontalAlignment(
+            SwingConstants.CENTER
         );
 
-        centerPanel.add(
-            orLabel
+        codeHintLabel.setBounds(
+            450,
+            410,
+            400,
+            30
         );
 
-        centerPanel.add(
-            Box.createVerticalStrut(25)
+        backgroundLabel.add(
+            codeHintLabel
         );
 
         createRoomButton =
             new JButton(
-                "Create Room"
+                "CREATE ROOM"
             );
 
         createRoomButton.setFont(
             new Font(
                 "Arial",
+                Font.BOLD,
+                18
+            )
+        );
+
+        createRoomButton.setBounds(
+            390,
+            480,
+            250,
+            60
+        );
+
+        createRoomButton.setFocusPainted(
+            false
+        );
+
+        createRoomButton.addActionListener(
+            new CreateRoomButtonListener(
+                this
+            )
+        );
+
+        backgroundLabel.add(
+            createRoomButton
+        );
+
+        joinRoomButton =
+            new JButton(
+                "JOIN ROOM"
+            );
+
+        joinRoomButton.setFont(
+            new Font(
+                "Arial",
+                Font.BOLD,
+                18
+            )
+        );
+
+        joinRoomButton.setBounds(
+            660,
+            480,
+            250,
+            60
+        );
+
+        joinRoomButton.setFocusPainted(
+            false
+        );
+
+        joinRoomButton.addActionListener(
+            new JoinRoomButtonListener(
+                this
+            )
+        );
+
+        backgroundLabel.add(
+            joinRoomButton
+        );
+
+        roomCodeLabel =
+            new JLabel(
+                ""
+            );
+
+        roomCodeLabel.setForeground(
+            Color.WHITE
+        );
+
+        roomCodeLabel.setFont(
+            new Font(
+                "Arial",
+                Font.BOLD,
+                30
+            )
+        );
+
+        roomCodeLabel.setHorizontalAlignment(
+            SwingConstants.CENTER
+        );
+
+        roomCodeLabel.setBounds(
+            350,
+            575,
+            600,
+            50
+        );
+
+        backgroundLabel.add(
+            roomCodeLabel
+        );
+
+        statusLabel =
+            new JLabel(
+                "Connecting..."
+            );
+
+        statusLabel.setForeground(
+            Color.WHITE
+        );
+
+        statusLabel.setFont(
+            new Font(
+                "Arial",
                 Font.PLAIN,
                 18
             )
         );
 
-        createRoomButton.setPreferredSize(
-            new Dimension(
-                180,
-                45
-            )
+        statusLabel.setHorizontalAlignment(
+            SwingConstants.CENTER
         );
 
-        createRoomButton.setAlignmentX(
-            Component.CENTER_ALIGNMENT
-        );
-
-        createRoomButton.addActionListener(
-            new CreateRoomButtonListener(this)
-        );
-
-        centerPanel.add(
-            createRoomButton
-        );
-
-        centerPanel.add(
-            Box.createVerticalStrut(35)
-        );
-
-        roomStatusLabel =
-            new JLabel(
-                "Connecting to server..."
-            );
-
-        roomStatusLabel.setForeground(
-            Color.WHITE
-        );
-
-        roomStatusLabel.setFont(
-            new Font(
-                "Arial",
-                Font.PLAIN,
-                16
-            )
-        );
-
-        roomStatusLabel.setAlignmentX(
-            Component.CENTER_ALIGNMENT
-        );
-
-        centerPanel.add(
-            roomStatusLabel
+        statusLabel.setBounds(
+            300,
+            650,
+            700,
+            40
         );
 
         backgroundLabel.add(
-            centerPanel,
-            BorderLayout.CENTER
+            statusLabel
         );
 
-        setVisible(true);
-
         connectToServer();
+
+        setVisible(
+            true
+        );
     }
 
-    /**
-     * Connects to the WebSocket server.
-     */
+    private ImageIcon getResourceIcon(
+        String path
+    ) {
+
+        java.net.URL resource =
+            RoomGUI.class.getResource(
+                path
+            );
+
+        return new ImageIcon(
+            resource
+        );
+    }
+
     private void connectToServer() {
 
-        try {
-
-            roomClient =
-                new GameWebSocketClient(this);
-
-        } catch (Exception e) {
-
-            updateStatus(
-                "Unable to connect to server."
+        roomClient =
+            new GameWebSocketClient(
+                this
             );
-
-            e.printStackTrace();
-        }
     }
 
-    /**
-     * Creates a room.
-     */
     private void createRoom() {
 
-        if (
-            roomClient == null
-            || !roomClient.isOpen()
-        ) {
+        String roomCode =
+            generateRoomCode();
 
-            updateStatus(
-                "Not connected to server."
-            );
+        roomCodeField.setText(
+            roomCode
+        );
 
-            return;
-        }
+        roomCodeField.setEditable(
+            false
+        );
 
-        updateStatus(
+        roomCodeLabel.setText(
+            "ROOM CODE: " + roomCode
+        );
+
+        statusLabel.setText(
             "Creating room..."
         );
 
-        roomClient.createRoom(
-            playerName
-        );
+        if (
+            roomClient != null
+            && roomClient.isOpen()
+        ) {
+
+            roomClient.createRoom(
+                playerName
+            );
+
+        } else {
+
+            statusLabel.setText(
+                "Room created. Waiting for server connection..."
+            );
+        }
     }
 
-    /**
-     * Joins a room.
-     */
     private void joinRoom() {
 
         String roomCode =
-            roomCodeField.getText()
+            roomCodeField
+                .getText()
                 .trim()
                 .toUpperCase();
 
@@ -440,70 +440,90 @@ public class RoomGUI extends JFrame {
             roomCode.length() != 4
         ) {
 
-            updateStatus(
-                "Invalid room code. Use exactly 4 letters or numbers."
+            JOptionPane.showMessageDialog(
+                this,
+                "Room code must be exactly 4 letters or numbers.",
+                "Invalid Room Code",
+                JOptionPane.ERROR_MESSAGE
             );
 
             return;
-        }
-
-        for (
-            int i = 0;
-            i < roomCode.length();
-            i++
-        ) {
-
-            char character =
-                roomCode.charAt(i);
-
-            boolean valid =
-                (
-                    character >= 'A'
-                    && character <= 'Z'
-                )
-                ||
-                (
-                    character >= '0'
-                    && character <= '9'
-                );
-
-            if (!valid) {
-
-                updateStatus(
-                    "Invalid room code. Use exactly 4 letters or numbers."
-                );
-
-                return;
-            }
         }
 
         if (
-            roomClient == null
-            || !roomClient.isOpen()
+            !roomCode.matches(
+                "[A-Z0-9]{4}"
+            )
         ) {
 
-            updateStatus(
-                "Not connected to server."
+            JOptionPane.showMessageDialog(
+                this,
+                "Room code can only contain letters and numbers.",
+                "Invalid Room Code",
+                JOptionPane.ERROR_MESSAGE
             );
 
             return;
         }
 
-        updateStatus(
-            "Joining room..."
+        roomCodeField.setText(
+            roomCode
         );
 
-        roomClient.joinRoom(
-            roomCode,
-            playerName
+        statusLabel.setText(
+            "Joining room " + roomCode + "..."
         );
+
+        if (
+            roomClient != null
+            && roomClient.isOpen()
+        ) {
+
+            roomClient.joinRoom(
+                roomCode,
+                playerName
+            );
+
+        } else {
+
+            statusLabel.setText(
+                "Not connected to server."
+            );
+        }
     }
 
-    /**
-     * Shows the created room code.
-     *
-     * @param roomCode generated room code
-     */
+    private String generateRoomCode() {
+
+        String characters =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+        Random random =
+            new Random();
+
+        StringBuilder code =
+            new StringBuilder();
+
+        for (
+            int i = 0;
+            i < 4;
+            i++
+        ) {
+
+            int index =
+                random.nextInt(
+                    characters.length()
+                );
+
+            code.append(
+                characters.charAt(
+                    index
+                )
+            );
+        }
+
+        return code.toString();
+    }
+
     public void showCreatedRoom(
         String roomCode
     ) {
@@ -512,43 +532,24 @@ public class RoomGUI extends JFrame {
             roomCode
         );
 
-        StringBuilder status =
-            new StringBuilder();
-
-        status.append(
-            "Room created: "
+        roomCodeLabel.setText(
+            "ROOM CODE: " + roomCode
         );
 
-        status.append(
-            roomCode
-        );
-
-        status.append(
-            " - Waiting for another player."
-        );
-
-        updateStatus(
-            status.toString()
+        statusLabel.setText(
+            "Waiting for another player..."
         );
     }
 
-    /**
-     * Updates the status text.
-     *
-     * @param message status message
-     */
     public void updateStatus(
         String message
     ) {
 
-        roomStatusLabel.setText(
+        statusLabel.setText(
             message
         );
     }
 
-    /**
-     * Create Room listener.
-     */
     public static class CreateRoomButtonListener
         implements ActionListener {
 
@@ -558,8 +559,7 @@ public class RoomGUI extends JFrame {
             RoomGUI gui
         ) {
 
-            this.gui =
-                gui;
+            this.gui = gui;
         }
 
         public void actionPerformed(
@@ -570,9 +570,6 @@ public class RoomGUI extends JFrame {
         }
     }
 
-    /**
-     * Join Room listener.
-     */
     public static class JoinRoomButtonListener
         implements ActionListener {
 
@@ -582,8 +579,7 @@ public class RoomGUI extends JFrame {
             RoomGUI gui
         ) {
 
-            this.gui =
-                gui;
+            this.gui = gui;
         }
 
         public void actionPerformed(
@@ -599,7 +595,8 @@ public class RoomGUI extends JFrame {
     ) {
 
         new RoomGUI(
-            "Test Player"
+            "Player 1"
         );
     }
 }
+

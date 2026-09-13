@@ -3,9 +3,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.*;
 
-/**
- * Represents the graphical user interface (view) of the Jungle King game board.
- */
 public class GameGUI {
 
     private static final int ROWS = 7;
@@ -20,13 +17,6 @@ public class GameGUI {
     private Board board;
     private JungleKingController controller;
 
-    /**
-     * Instantiates the graphical user interface of the Jungle King game.
-     *
-     * @param board Game board model
-     * @param controller Game controller instance
-     * @param currentPlayer Initial starting player
-     */
     public GameGUI(
         Board board,
         JungleKingController controller,
@@ -43,7 +33,9 @@ public class GameGUI {
         frame.setResizable(false);
         frame.setLocationRelativeTo(null);
 
-        ImageIcon logo = getResourceIcon("/Resources/logo.png");
+        ImageIcon logo =
+            getResourceIcon("/Resources/logo.png");
+
         frame.setIconImage(logo.getImage());
 
         JLayeredPane layer = new JLayeredPane();
@@ -52,11 +44,12 @@ public class GameGUI {
         ImageIcon background =
             getResourceIcon("/Resources/bg_darker.png");
 
-        Image bg = background.getImage().getScaledInstance(
-            1300,
-            900,
-            Image.SCALE_SMOOTH
-        );
+        Image bg =
+            background.getImage().getScaledInstance(
+                1300,
+                900,
+                Image.SCALE_SMOOTH
+            );
 
         background = new ImageIcon(bg);
 
@@ -241,12 +234,6 @@ public class GameGUI {
         frame.requestFocusInWindow();
     }
 
-    /**
-     * Gets an image from the JAR resources.
-     *
-     * @param path resource path
-     * @return image icon
-     */
     private ImageIcon getResourceIcon(String path) {
 
         java.net.URL resource =
@@ -255,64 +242,61 @@ public class GameGUI {
         return new ImageIcon(resource);
     }
 
-    /**
-     * Initializes default pieces and tile overlays on the grid.
-     */
     private void addGamePieces() {
 
         ImageIcon elephant1 =
-            getResourceIcon("/Resources/elephant1.png");
+            getResourceIcon("/Resources/Elephant1.png");
 
         ImageIcon lion1 =
-            getResourceIcon("/Resources/lion1.png");
+            getResourceIcon("/Resources/Lion1.png");
 
         ImageIcon tiger1 =
-            getResourceIcon("/Resources/tiger1.png");
+            getResourceIcon("/Resources/Tiger1.png");
 
         ImageIcon leopard1 =
-            getResourceIcon("/Resources/leopard1.png");
+            getResourceIcon("/Resources/Leopard1.png");
 
         ImageIcon cat1 =
-            getResourceIcon("/Resources/cat1.png");
+            getResourceIcon("/Resources/Cat1.png");
 
         ImageIcon dog1 =
-            getResourceIcon("/Resources/dog1.png");
+            getResourceIcon("/Resources/Dog1.png");
 
         ImageIcon rat1 =
-            getResourceIcon("/Resources/rat1.png");
+            getResourceIcon("/Resources/Rat1.png");
 
         ImageIcon wolf1 =
-            getResourceIcon("/Resources/wolf1.png");
+            getResourceIcon("/Resources/Wolf1.png");
 
         ImageIcon elephant2 =
-            getResourceIcon("/Resources/elephant2.png");
+            getResourceIcon("/Resources/Elephant2.png");
 
         ImageIcon lion2 =
-            getResourceIcon("/Resources/lion2.png");
+            getResourceIcon("/Resources/Lion2.png");
 
         ImageIcon tiger2 =
-            getResourceIcon("/Resources/tiger2.png");
+            getResourceIcon("/Resources/Tiger2.png");
 
         ImageIcon leopard2 =
-            getResourceIcon("/Resources/leopard2.png");
+            getResourceIcon("/Resources/Leopard2.png");
 
         ImageIcon cat2 =
-            getResourceIcon("/Resources/cat2.png");
+            getResourceIcon("/Resources/Cat2.png");
 
         ImageIcon dog2 =
-            getResourceIcon("/Resources/dog2.png");
+            getResourceIcon("/Resources/Dog2.png");
 
         ImageIcon rat2 =
-            getResourceIcon("/Resources/rat2.png");
+            getResourceIcon("/Resources/Rat2.png");
 
         ImageIcon wolf2 =
-            getResourceIcon("/Resources/wolf2.png");
+            getResourceIcon("/Resources/Wolf2.png");
 
         ImageIcon house1 =
-            getResourceIcon("/Resources/house1.png");
+            getResourceIcon("/Resources/House1.png");
 
         ImageIcon house2 =
-            getResourceIcon("/Resources/house2.png");
+            getResourceIcon("/Resources/House2.png");
 
         ImageIcon trap1 =
             getResourceIcon("/Resources/trap1.png");
@@ -321,7 +305,7 @@ public class GameGUI {
             getResourceIcon("/Resources/trap2.png");
 
         ImageIcon lake =
-            getResourceIcon("/Resources/lake.png");
+            getResourceIcon("/Resources/LAKE.png");
 
         setTileIcon(
             0, 2, elephant1, "elephant1"
@@ -420,10 +404,18 @@ public class GameGUI {
         );
 
         int[][] lakePositions = {
-            {1, 3}, {1, 4}, {1, 5},
-            {2, 3}, {2, 4}, {2, 5},
-            {4, 3}, {4, 4}, {4, 5},
-            {5, 3}, {5, 4}, {5, 5}
+            {1, 3},
+            {1, 4},
+            {1, 5},
+            {2, 3},
+            {2, 4},
+            {2, 5},
+            {4, 3},
+            {4, 4},
+            {4, 5},
+            {5, 3},
+            {5, 4},
+            {5, 5}
         };
 
         for (int i = 0; i < lakePositions.length; i++) {
@@ -455,9 +447,6 @@ public class GameGUI {
         );
     }
 
-    /**
-     * Updates board visuals when a move is executed.
-     */
     public void updateBoard(
         Piece selectedPiece,
         int oldRow,
@@ -485,13 +474,13 @@ public class GameGUI {
             selectedPiece.getCol();
 
         ImageIcon lake =
-            getResourceIcon("/Resources/lake.png");
+            getResourceIcon("/Resources/LAKE.png");
 
         ImageIcon rat1 =
-            getResourceIcon("/Resources/rat1.png");
+            getResourceIcon("/Resources/Rat1.png");
 
         ImageIcon rat2 =
-            getResourceIcon("/Resources/rat2.png");
+            getResourceIcon("/Resources/Rat2.png");
 
         ImageIcon trap1 =
             getResourceIcon("/Resources/trap1.png");
@@ -579,10 +568,7 @@ public class GameGUI {
             StringBuilder trapIconName =
                 new StringBuilder();
 
-            trapIconName.append(
-                "trap"
-            );
-
+            trapIconName.append("trap");
             trapIconName.append(trapOwner);
             trapIconName.append("_");
             trapIconName.append(iconName);
@@ -738,9 +724,6 @@ public class GameGUI {
         frame.repaint();
     }
 
-    /**
-     * Updates turn status label.
-     */
     public void updateTurnDisplay(
         Player activePlayer,
         Player localAssignedPlayer
@@ -830,9 +813,6 @@ public class GameGUI {
         frame.dispose();
     }
 
-    /**
-     * Handles clicks on board tiles.
-     */
     public static class TileMouseListener
         implements MouseListener {
 
@@ -855,22 +835,12 @@ public class GameGUI {
             controller.clickTile(row, col);
         }
 
-        public void mousePressed(MouseEvent e) {
-        }
-
-        public void mouseReleased(MouseEvent e) {
-        }
-
-        public void mouseEntered(MouseEvent e) {
-        }
-
-        public void mouseExited(MouseEvent e) {
-        }
+        public void mousePressed(MouseEvent e) {}
+        public void mouseReleased(MouseEvent e) {}
+        public void mouseEntered(MouseEvent e) {}
+        public void mouseExited(MouseEvent e) {}
     }
 
-    /**
-     * Handles clicks on the help button.
-     */
     public static class HelpMouseListener
         implements MouseListener {
 
@@ -878,16 +848,9 @@ public class GameGUI {
             new RuleFrameGUI(false);
         }
 
-        public void mousePressed(MouseEvent e) {
-        }
-
-        public void mouseReleased(MouseEvent e) {
-        }
-
-        public void mouseEntered(MouseEvent e) {
-        }
-
-        public void mouseExited(MouseEvent e) {
-        }
+        public void mousePressed(MouseEvent e) {}
+        public void mouseReleased(MouseEvent e) {}
+        public void mouseEntered(MouseEvent e) {}
+        public void mouseExited(MouseEvent e) {}
     }
 }

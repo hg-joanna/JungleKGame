@@ -3,6 +3,8 @@ public class GameWebSocketClient {
     private JungleKingController controller;
     private RoomGUI roomGUI;
 
+    private boolean connected;
+
     public GameWebSocketClient(
         JungleKingController controller,
         String roomId,
@@ -10,9 +12,10 @@ public class GameWebSocketClient {
     ) {
 
         this.controller = controller;
+        this.connected = false;
 
         System.out.println(
-            "GameWebSocketClient loaded for game."
+            "GameWebSocketClient created for game."
         );
     }
 
@@ -21,13 +24,14 @@ public class GameWebSocketClient {
     ) {
 
         this.roomGUI = roomGUI;
+        this.connected = false;
 
         System.out.println(
-            "GameWebSocketClient loaded for RoomGUI."
+            "GameWebSocketClient created for RoomGUI."
         );
 
         roomGUI.updateStatus(
-            "WebSocket test client loaded."
+            "WebSocket client loaded."
         );
     }
 
@@ -35,9 +39,19 @@ public class GameWebSocketClient {
         String playerName
     ) {
 
+        StringBuilder message =
+            new StringBuilder();
+
+        message.append(
+            "CREATE_ROOM:"
+        );
+
+        message.append(
+            playerName
+        );
+
         System.out.println(
-            "Create room requested: "
-            + playerName
+            message.toString()
         );
     }
 
@@ -46,15 +60,33 @@ public class GameWebSocketClient {
         String playerName
     ) {
 
+        StringBuilder message =
+            new StringBuilder();
+
+        message.append(
+            "JOIN_ROOM:"
+        );
+
+        message.append(
+            roomCode
+        );
+
+        message.append(
+            ":"
+        );
+
+        message.append(
+            playerName
+        );
+
         System.out.println(
-            "Join room requested: "
-            + roomCode
+            message.toString()
         );
     }
 
     public boolean isOpen() {
 
-        return true;
+        return connected;
     }
 
     public void sendMove() {

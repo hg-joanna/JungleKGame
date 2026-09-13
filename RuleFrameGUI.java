@@ -1,78 +1,199 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.*;
 
 /**
- * Represents the graphical user interface of the rules of the game
+ * Represents the graphical user interface of the rules of the game.
  */
 public class RuleFrameGUI extends JFrame {
-	/**Determines what button is shown on screen*/
+
+    /** Determines whether the rules are shown before the game starts. */
     private boolean beforeGameStarted;
 
     /**
-     * Instantiates the GUI for the rules of the game
-     * @param beforeGameStarted boolean flag to track if the rule view is clicked on before the game starts
+     * Instantiates the GUI for the rules of the game.
+     *
+     * @param beforeGameStarted boolean flag to track if the rule view
+     *                          is clicked on before the game starts
      */
     public RuleFrameGUI(boolean beforeGameStarted) {
-        this.beforeGameStarted = beforeGameStarted; // Flag to track if rules are before game start
-        setTitle("Jungle King - Rules");
-        setSize(850, 800); 
-        setResizable(false); 
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null); 
 
-        // logo beside the title
-        ImageIcon logo = new ImageIcon("Resources/logo.png");
+        this.beforeGameStarted = beforeGameStarted;
+
+        setTitle("Jungle King - Rules");
+        setSize(850, 800);
+        setResizable(false);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        // Logo beside the title
+        ImageIcon logo =
+            getResourceIcon("/Resources/logo.png");
+
         setIconImage(logo.getImage());
-        
+
         JLayeredPane layer = new JLayeredPane();
         layer.setLayout(null);
         setContentPane(layer);
 
-        ImageIcon rulesBG = new ImageIcon("Resources/rules.png");
-        JLabel backgroundLabel = new JLabel(rulesBG);
-        backgroundLabel.setBounds(0, 0, 850, 800);
-        layer.add(backgroundLabel, Integer.valueOf(0));
+        // Rules background
+        ImageIcon rulesBG =
+            getResourceIcon("/Resources/rules.png");
 
-        // Create the action button
+        JLabel backgroundLabel =
+            new JLabel(rulesBG);
+
+        backgroundLabel.setBounds(
+            0,
+            0,
+            850,
+            800
+        );
+
+        layer.add(
+            backgroundLabel,
+            Integer.valueOf(0)
+        );
+
+        // Action button
         JButton actionButton = new JButton();
 
-        ImageIcon nextIcon = new ImageIcon("Resources/next_rules.png");
-        ImageIcon nextIconHover = new ImageIcon("Resources/next_rules_hovered.png");
-        ImageIcon closeIcon = new ImageIcon("Resources/exit_rules.png");
-        ImageIcon closeIconHover = new ImageIcon("Resources/exit_rules_hovered.png");
+        ImageIcon nextIcon =
+            getResourceIcon(
+                "/Resources/next_rules.png"
+            );
 
-        // Set the button properties based on beforeGameStarted flag
+        ImageIcon nextIconHover =
+            getResourceIcon(
+                "/Resources/next_rules_hovered.png"
+            );
+
+        ImageIcon closeIcon =
+            getResourceIcon(
+                "/Resources/exit_rules.png"
+            );
+
+        ImageIcon closeIconHover =
+            getResourceIcon(
+                "/Resources/exit_rules_hovered.png"
+            );
+
         if (beforeGameStarted) {
+
             actionButton.setIcon(nextIcon);
-            actionButton.setRolloverIcon(nextIconHover);
-            actionButton.setBounds(653, 675, 145, 62); 
-            actionButton.addActionListener(e -> proceedToPlayerSetup());
+            actionButton.setRolloverIcon(
+                nextIconHover
+            );
+
+            actionButton.setBounds(
+                653,
+                675,
+                145,
+                62
+            );
+
+            actionButton.addActionListener(
+                new NextButtonListener(this)
+            );
+
         } else {
+
             actionButton.setIcon(closeIcon);
-            actionButton.setRolloverIcon(closeIconHover);
-            actionButton.setBounds(653, 675, 145, 62);
-            actionButton.addActionListener(e -> dispose());
+            actionButton.setRolloverIcon(
+                closeIconHover
+            );
+
+            actionButton.setBounds(
+                653,
+                675,
+                145,
+                62
+            );
+
+            actionButton.addActionListener(
+                new CloseButtonListener(this)
+            );
         }
 
-        actionButton.setBorderPainted(false);  // Remove the button border
-        actionButton.setContentAreaFilled(false);  // Make the button transparent
-        actionButton.setFocusPainted(false);  // Remove the focus border
+        actionButton.setBorderPainted(false);
+        actionButton.setContentAreaFilled(false);
+        actionButton.setFocusPainted(false);
 
-        layer.add(actionButton, JLayeredPane.POPUP_LAYER);
+        layer.add(
+            actionButton,
+            JLayeredPane.POPUP_LAYER
+        );
 
         setVisible(true);
     }
 
-	/**opens PlayerSetupGUI */
-    private void proceedToPlayerSetup() {
-        SwingUtilities.invokeLater(() -> {
-            new PlayerSetupGUI();
-            dispose();  
-        });
+    /**
+     * Loads an image from the JAR resources.
+     */
+    private ImageIcon getResourceIcon(String path) {
+
+        java.net.URL resource =
+            RuleFrameGUI.class.getResource(path);
+
+        return new ImageIcon(resource);
     }
 
     /**
-     * Main method
-     * @param args main method
+     * Opens PlayerSetupGUI after the rules.
+     */
+    private void proceedToPlayerSetup() {
+
+        new PlayerSetupGUI();
+
+        dispose();
+    }
+
+    /**
+     * Listener for the NEXT button.
+     */
+    public static class NextButtonListener
+        implements ActionListener {
+
+        private RuleFrameGUI gui;
+
+        public NextButtonListener(
+            RuleFrameGUI gui
+        ) {
+            this.gui = gui;
+        }
+
+        public void actionPerformed(
+            ActionEvent e
+        ) {
+            gui.proceedToPlayerSetup();
+        }
+    }
+
+    /**
+     * Listener for the CLOSE button.
+     */
+    public static class CloseButtonListener
+        implements ActionListener {
+
+        private RuleFrameGUI gui;
+
+        public CloseButtonListener(
+            RuleFrameGUI gui
+        ) {
+            this.gui = gui;
+        }
+
+        public void actionPerformed(
+            ActionEvent e
+        ) {
+            gui.dispose();
+        }
+    }
+
+    /**
+     * Main method.
+     *
+     * @param args main method arguments
      */
     public static void main(String[] args) {
         new RuleFrameGUI(true);

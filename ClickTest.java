@@ -11,19 +11,11 @@ public class ClickTest extends JButton implements MouseListener {
 
     public void mouseClicked(MouseEvent e) {
         System.out.println("START CLICKED");
-
-        PlayerSetupGUI.main(new String[0]);
+        new RuleFrameGUI(true);
     }
 
-    public void mousePressed(MouseEvent e) {
-    }
-
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    public void mouseExited(MouseEvent e) {
-    }
+    public void mousePressed(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {}
+    public void mouseEntered(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {}
 }

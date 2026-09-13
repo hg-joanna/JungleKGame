@@ -1,8 +1,15 @@
-public class GameWebSocketClient {
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.WebSocket;
+import java.util.concurrent.CompletionStage;
+
+public class GameWebSocketClient
+    implements WebSocket.Listener {
 
     private JungleKingController controller;
     private RoomGUI roomGUI;
 
+    private WebSocket webSocket;
     private boolean connected;
 
     public GameWebSocketClient(
@@ -30,29 +37,61 @@ public class GameWebSocketClient {
             "GameWebSocketClient created for RoomGUI."
         );
 
-        roomGUI.updateStatus(
-            "WebSocket client loaded."
-        );
+        connect();
+    }
+
+    private void connect() {
+
+        try {
+
+            URI serverUri =
+                new URI(
+                    "wss://junglekgame.onrender.com/"
+                );
+
+            System.out.println(
+                "Creating WebSocket connection."
+            );
+
+            HttpClient client =
+                HttpClient.newHttpClient();
+
+            client.newWebSocketBuilder()
+                .buildAsync(
+                    serverUri,
+                    this
+                );
+
+        } catch (Exception e) {
+
+            System.out.println(
+                "WebSocket connection failed."
+            );
+
+            if (roomGUI != null) {
+
+                roomGUI.updateStatus(
+                    "Unable to connect to server."
+                );
+            }
+        }
     }
 
     public void createRoom(
         String playerName
     ) {
 
-        StringBuilder message =
-            new StringBuilder();
+        if (!connected || webSocket == null) {
 
-        message.append(
-            "CREATE_ROOM:"
-        );
+            if (roomGUI != null) {
 
-        message.append(
-            playerName
-        );
+                roomGUI.updateStatus(
+                    "Not connected to server."
+                );
+            }
 
-        System.out.println(
-            message.toString()
-        );
+            return;
+        }
     }
 
     public void joinRoom(
@@ -60,28 +99,17 @@ public class GameWebSocketClient {
         String playerName
     ) {
 
-        StringBuilder message =
-            new StringBuilder();
+        if (!connected || webSocket == null) {
 
-        message.append(
-            "JOIN_ROOM:"
-        );
+            if (roomGUI != null) {
 
-        message.append(
-            roomCode
-        );
+                roomGUI.updateStatus(
+                    "Not connected to server."
+                );
+            }
 
-        message.append(
-            ":"
-        );
-
-        message.append(
-            playerName
-        );
-
-        System.out.println(
-            message.toString()
-        );
+            return;
+        }
     }
 
     public boolean isOpen() {
@@ -91,9 +119,9 @@ public class GameWebSocketClient {
 
     public void sendMove() {
 
-        System.out.println(
-            "Send move requested."
-        );
+        if (!connected || webSocket == null) {
+            return;
+        }
     }
 
     public void processRemoteMove() {
@@ -101,5 +129,75 @@ public class GameWebSocketClient {
         System.out.println(
             "Remote move requested."
         );
+    }
+
+    public void onOpen(
+        WebSocket webSocket
+    ) {
+
+        this.webSocket = webSocket;
+        this.connected = true;
+
+        System.out.println(
+            "WebSocket connected."
+        );
+
+        if (roomGUI != null) {
+
+            roomGUI.updateStatus(
+                "Connected to server."
+            );
+        }
+
+        webSocket.request(1);
+    }
+
+    public CompletionStage<?> onText(
+        WebSocket webSocket,
+        CharSequence data,
+        boolean last
+    ) {
+
+        System.out.println(
+            "WebSocket message received."
+        );
+
+        webSocket.request(1);
+
+        return null;
+    }
+
+    public void onError(
+        WebSocket webSocket,
+        Throwable error
+    ) {
+
+        connected = false;
+
+        System.out.println(
+            "WebSocket error."
+        );
+
+        if (roomGUI != null) {
+
+            roomGUI.updateStatus(
+                "WebSocket connection error."
+            );
+        }
+    }
+
+    public CompletionStage<?> onClose(
+        WebSocket webSocket,
+        int statusCode,
+        String reason
+    ) {
+
+        connected = false;
+
+        System.out.println(
+            "WebSocket closed."
+        );
+
+        return null;
     }
 }

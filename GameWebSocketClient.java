@@ -1,8 +1,17 @@
 
+import java.net.URI;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import javax.swing.SwingUtilities;
+
 public class GameWebSocketClient {
 
     private JungleKingController controller;
     private RoomGUI roomGUI;
+
+    private String roomId;
+    private String playerName;
 
     private boolean connected;
 
@@ -13,6 +22,8 @@ public class GameWebSocketClient {
     ) {
 
         this.controller = controller;
+        this.roomId = roomId;
+        this.playerName = playerName;
         this.connected = false;
 
         System.out.println(
@@ -25,7 +36,7 @@ public class GameWebSocketClient {
     ) {
 
         this.roomGUI = roomGUI;
-        this.connected = false;
+        this.connected = true;
 
         System.out.println(
             "GameWebSocketClient created for RoomGUI."
@@ -40,19 +51,39 @@ public class GameWebSocketClient {
         String playerName
     ) {
 
-        StringBuilder message =
-            new StringBuilder();
-
-        message.append(
-            "CREATE_ROOM:"
-        );
-
-        message.append(
-            playerName
-        );
-
         System.out.println(
-            message.toString()
+            "CREATE_ROOM:" + playerName
+        );
+
+        /*
+         * Temporary room creation response.
+         *
+         * The actual WebSocket connection will be
+         * connected in the next networking step.
+         *
+         * This allows the waiting-room UI to be tested
+         * without breaking CheerpJ.
+         */
+
+        String roomCode =
+            generateRoomCode();
+
+        final String finalRoomCode =
+            roomCode;
+
+        SwingUtilities.invokeLater(
+            new Runnable() {
+
+                public void run() {
+
+                    if (roomGUI != null) {
+
+                        roomGUI.showCreatedRoom(
+                            finalRoomCode
+                        );
+                    }
+                }
+            }
         );
     }
 
@@ -83,11 +114,56 @@ public class GameWebSocketClient {
         System.out.println(
             message.toString()
         );
+
+        if (roomGUI != null) {
+
+            roomGUI.updateStatus(
+                "Joining room " + roomCode + "..."
+            );
+        }
+    }
+
+    private String generateRoomCode() {
+
+        String characters =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+        StringBuilder code =
+            new StringBuilder();
+
+        long value =
+            System.currentTimeMillis();
+
+        for (
+            int i = 0;
+            i < 4;
+            i++
+        ) {
+
+            int index =
+                (int)(
+                    value
+                    % characters.length()
+                );
+
+            if (index < 0) {
+                index = index * -1;
+            }
+
+            code.append(
+                characters.charAt(index)
+            );
+
+            value =
+                value / 7 + 13;
+        }
+
+        return code.toString();
     }
 
     public boolean isOpen() {
 
-        return true;
+        return connected;
     }
 
     public void sendMove() {

@@ -56,8 +56,16 @@ public class GameWebSocketClient {
         );
 
         roomGUI.updateStatus(
-            "JavaScript bridge test."
+            "Sending create room request..."
         );
+
+        /*
+         * JavaScript WebSocket connection will be
+         * connected separately from Java.
+         *
+         * This method currently confirms that the
+         * Java request reaches this point safely.
+         */
     }
 
     public void joinRoom(
@@ -89,7 +97,7 @@ public class GameWebSocketClient {
         );
 
         roomGUI.updateStatus(
-            "JavaScript bridge test."
+            "Sending join room request..."
         );
     }
 

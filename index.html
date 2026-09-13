@@ -27,6 +27,89 @@
 
 <script>
 
+var jungleSocket = null;
+
+function connectJungleServer() {
+
+    console.log("Connecting to Jungle King server...");
+
+    jungleSocket = new WebSocket(
+        "wss://junglekgame.onrender.com/"
+    );
+
+    jungleSocket.onopen = function () {
+
+        console.log(
+            "Jungle King WebSocket connected."
+        );
+
+        window.jungleSocketConnected = true;
+    };
+
+    jungleSocket.onmessage = function (event) {
+
+        console.log(
+            "Server message:"
+        );
+
+        console.log(
+            event.data
+        );
+
+        window.jungleSocketMessage =
+            event.data;
+    };
+
+    jungleSocket.onerror = function (error) {
+
+        console.log(
+            "Jungle King WebSocket error."
+        );
+
+        console.log(
+            error
+        );
+    };
+
+    jungleSocket.onclose = function () {
+
+        console.log(
+            "Jungle King WebSocket closed."
+        );
+
+        window.jungleSocketConnected = false;
+    };
+}
+
+function sendJungleMessage(message) {
+
+    console.log(
+        "Sending to server:"
+    );
+
+    console.log(
+        message
+    );
+
+    if (
+        jungleSocket != null
+        && jungleSocket.readyState === WebSocket.OPEN
+    ) {
+
+        jungleSocket.send(
+            message
+        );
+
+        return true;
+    }
+
+    console.log(
+        "WebSocket is not connected."
+    );
+
+    return false;
+}
+
 (async function () {
 
     console.log(
@@ -34,102 +117,14 @@
     );
 
     await cheerpjInit({
-        version: 11,
-
-        natives: {
-
-            "GameWebSocketClient.nativeConnect":
-                function (client) {
-
-                    console.log(
-                        "Opening Render WebSocket..."
-                    );
-
-                    var socket =
-                        new WebSocket(
-                            "wss://junglekgame.onrender.com/"
-                        );
-
-                    window.jungleKingSocket =
-                        socket;
-
-                    socket.onopen =
-                        function () {
-
-                            console.log(
-                                "Render WebSocket connected."
-                            );
-
-                            client.onConnected();
-                        };
-
-                    socket.onmessage =
-                        function (event) {
-
-                            console.log(
-                                "Render message:",
-                                event.data
-                            );
-
-                            client.onMessage(
-                                event.data
-                            );
-                        };
-
-                    socket.onerror =
-                        function (error) {
-
-                            console.log(
-                                "Render WebSocket error.",
-                                error
-                            );
-
-                            client.onConnectionFailed();
-                        };
-
-                    socket.onclose =
-                        function () {
-
-                            console.log(
-                                "Render WebSocket closed."
-                            );
-                        };
-                },
-
-            "GameWebSocketClient.nativeSend":
-                function (
-                    client,
-                    message
-                ) {
-
-                    console.log(
-                        "Sending to Render:",
-                        message
-                    );
-
-                    if (
-                        window.jungleKingSocket
-                        && window.jungleKingSocket.readyState
-                            === WebSocket.OPEN
-                    ) {
-
-                        window.jungleKingSocket.send(
-                            message
-                        );
-
-                    } else {
-
-                        console.log(
-                            "WebSocket is not open."
-                        );
-                    }
-                }
-        }
+        version: 11
     });
 
     console.log(
         "CheerpJ runtime ready"
     );
+
+    connectJungleServer();
 
     cheerpjCreateDisplay(
         1300,

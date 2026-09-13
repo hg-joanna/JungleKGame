@@ -26,115 +26,91 @@
 
 <script>
 
-let jungleWebSocket = null;
-
-
-/*
- * Java:
- * GameWebSocketClient.connect(String)
- */
-async function Java_GameWebSocketClient_connect(
-    lib,
-    self,
-    serverUrl
-) {
-
-    console.log(
-        "Connecting to:",
-        serverUrl
-    );
-
-    jungleWebSocket =
-        new WebSocket(serverUrl);
-
-    jungleWebSocket.onopen =
-        async function () {
-
-            console.log(
-                "WebSocket connected."
-            );
-
-            await self.onOpen();
-        };
-
-    jungleWebSocket.onmessage =
-        async function (event) {
-
-            console.log(
-                "WebSocket received:",
-                event.data
-            );
-
-            await self.onMessage(
-                event.data
-            );
-        };
-
-    jungleWebSocket.onerror =
-        async function () {
-
-            console.error(
-                "WebSocket error."
-            );
-
-            await self.onError(
-                "Browser WebSocket error"
-            );
-        };
-
-    jungleWebSocket.onclose =
-        async function () {
-
-            console.log(
-                "WebSocket closed."
-            );
-
-            await self.onClose();
-        };
-}
-
-
-/*
- * Java:
- * GameWebSocketClient.sendNative(String)
- */
-async function Java_GameWebSocketClient_sendNative(
-    lib,
-    self,
-    message
-) {
-
-    if (
-        jungleWebSocket != null
-        && jungleWebSocket.readyState
-            === WebSocket.OPEN
-    ) {
-
-        jungleWebSocket.send(
-            message
-        );
-
-        console.log(
-            "WebSocket sent:",
-            message
-        );
-    }
-}
-
-
-/*
- * Java:
- * GameWebSocketClient.isNativeOpen()
- */
-async function Java_GameWebSocketClient_isNativeOpen(
+async function Java_GameWebSocketClient_connectNative(
     lib,
     self
 ) {
 
-    return (
-        jungleWebSocket != null
-        && jungleWebSocket.readyState
-            === WebSocket.OPEN
+    console.log(
+        "Java requested WebSocket connection."
+    );
+
+    const socket =
+        new WebSocket(
+            "wss://junglekgame.onrender.com/"
+        );
+
+    socket.onopen = function () {
+
+        console.log(
+            "Browser WebSocket connected."
+        );
+
+        lib.GameWebSocketClient.setConnected(
+            self,
+            true
+        );
+    };
+
+    socket.onerror = function () {
+
+        console.log(
+            "Browser WebSocket error."
+        );
+
+        lib.GameWebSocketClient.setConnected(
+            self,
+            false
+        );
+    };
+
+    socket.onclose = function () {
+
+        console.log(
+            "Browser WebSocket closed."
+        );
+
+        lib.GameWebSocketClient.setConnected(
+            self,
+            false
+        );
+    };
+}
+
+
+async function Java_GameWebSocketClient_sendCreateRoomNative(
+    lib,
+    self,
+    playerName
+) {
+
+    console.log(
+        "Create room requested from Java."
+    );
+
+    console.log(
+        playerName
+    );
+}
+
+
+async function Java_GameWebSocketClient_sendJoinRoomNative(
+    lib,
+    self,
+    roomCode,
+    playerName
+) {
+
+    console.log(
+        "Join room requested from Java."
+    );
+
+    console.log(
+        roomCode
+    );
+
+    console.log(
+        playerName
     );
 }
 
@@ -146,19 +122,17 @@ async function Java_GameWebSocketClient_isNativeOpen(
     );
 
     await cheerpjInit({
-
         version: 11,
 
         natives: {
 
-            Java_GameWebSocketClient_connect,
+            Java_GameWebSocketClient_connectNative,
 
-            Java_GameWebSocketClient_sendNative,
+            Java_GameWebSocketClient_sendCreateRoomNative,
 
-            Java_GameWebSocketClient_isNativeOpen
+            Java_GameWebSocketClient_sendJoinRoomNative
 
         }
-
     });
 
     console.log(

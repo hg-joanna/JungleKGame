@@ -1,31 +1,183 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jungle King</title>
+
     <script src="https://cjrtnc.leaningtech.com/latest/loader.js"></script>
 </head>
-<body style="margin: 0; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh;">
 
-    <script src="https://cjrtnc.leaningtech.com/latest/loader.js"></script>
+<body>
 
-    <script>
-    (async function () {
-        await cheerpjInit({
-            version: 11
-        });
+<script>
 
-        cheerpjCreateDisplay(1300, 900);
+var jungleWebSocket = null;
 
-        cheerpjRunMain(
-            "HomePageGUI",
-            "/app/JungleKing.jar"
+/*
+ * Connect Java GameWebSocketClient to the browser WebSocket.
+ */
+function connectWebSocket(
+    javaClient,
+    serverUrl
+) {
+
+    console.log(
+        "Connecting to WebSocket:",
+        serverUrl
+    );
+
+    try {
+
+        jungleWebSocket =
+            new WebSocket(serverUrl);
+
+        jungleWebSocket.onopen =
+            function () {
+
+                console.log(
+                    "WebSocket connected."
+                );
+
+                javaClient.onOpen();
+            };
+
+        jungleWebSocket.onmessage =
+            function (event) {
+
+                console.log(
+                    "WebSocket message:",
+                    event.data
+                );
+
+                javaClient.onMessage(
+                    event.data
+                );
+            };
+
+        jungleWebSocket.onerror =
+            function (event) {
+
+                console.error(
+                    "WebSocket error:",
+                    event
+                );
+
+                javaClient.onError(
+                    "Browser WebSocket error"
+                );
+            };
+
+        jungleWebSocket.onclose =
+            function () {
+
+                console.log(
+                    "WebSocket closed."
+                );
+
+                javaClient.onClose();
+            };
+
+    } catch (error) {
+
+        console.error(
+            "WebSocket connection failed:",
+            error
         );
-    })();
-    </script>
 
-        runGame();
-    </script>
+        javaClient.onError(
+            String(error)
+        );
+    }
+}
+
+
+/*
+ * Send a message from Java to the browser WebSocket.
+ */
+function sendWebSocketMessage(
+    message
+) {
+
+    if (
+        jungleWebSocket != null
+        && jungleWebSocket.readyState
+            === WebSocket.OPEN
+    ) {
+
+        jungleWebSocket.send(
+            message
+        );
+
+        console.log(
+            "WebSocket sent:",
+            message
+        );
+
+    } else {
+
+        console.error(
+            "WebSocket is not open."
+        );
+    }
+}
+
+
+/*
+ * Check whether the browser WebSocket is open.
+ */
+function isWebSocketOpen() {
+
+    return (
+        jungleWebSocket != null
+        && jungleWebSocket.readyState
+            === WebSocket.OPEN
+    );
+}
+
+
+/*
+ * Connect Java native methods to the JavaScript functions above.
+ */
+(async function () {
+
+    await cheerpjInit({
+        version: 11
+    });
+
+    cheerpjCreateDisplay(
+        1300,
+        900
+    );
+
+    /*
+     * Expose the JavaScript functions that
+     * GameWebSocketClient expects.
+     */
+    cheerpjAddStringReplacement(
+        "GameWebSocketClient",
+        "connect",
+        "connectWebSocket"
+    );
+
+    cheerpjAddStringReplacement(
+        "GameWebSocketClient",
+        "sendNative",
+        "sendWebSocketMessage"
+    );
+
+    cheerpjAddStringReplacement(
+        "GameWebSocketClient",
+        "isNativeOpen",
+        "isWebSocketOpen"
+    );
+
+    cheerpjRunMain(
+        "HomePageGUI",
+        "/app/JungleKing.jar"
+    );
+
+})();
+</script>
+
 </body>
 </html>

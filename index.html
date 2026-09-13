@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -26,46 +27,6 @@
 
 <script>
 
-async function Java_GameWebSocketClient_connectNative(
-    lib
-) {
-
-    console.log(
-        "NATIVE METHOD WORKS"
-    );
-
-    console.log(
-        "Now testing browser WebSocket."
-    );
-
-    const socket =
-        new WebSocket(
-            "wss://junglekgame.onrender.com/"
-        );
-
-    socket.onopen = function () {
-
-        console.log(
-            "BROWSER WEBSOCKET CONNECTED"
-        );
-    };
-
-    socket.onerror = function () {
-
-        console.log(
-            "BROWSER WEBSOCKET ERROR"
-        );
-    };
-
-    socket.onclose = function () {
-
-        console.log(
-            "BROWSER WEBSOCKET CLOSED"
-        );
-    };
-}
-
-
 (async function () {
 
     console.log(
@@ -73,13 +34,7 @@ async function Java_GameWebSocketClient_connectNative(
     );
 
     await cheerpjInit({
-
-        version: 11,
-
-        natives: {
-            Java_GameWebSocketClient_connectNative
-        }
-
+        version: 11
     });
 
     console.log(
@@ -101,3 +56,4 @@ async function Java_GameWebSocketClient_connectNative(
 
 </body>
 </html>
+

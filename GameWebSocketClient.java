@@ -1,3 +1,4 @@
+
 public class GameWebSocketClient {
 
     private JungleKingController controller;
@@ -30,23 +31,29 @@ public class GameWebSocketClient {
             "GameWebSocketClient created for RoomGUI."
         );
 
-        connectNative();
+        roomGUI.updateStatus(
+            "WebSocket client loaded."
+        );
     }
-
-    private static native void connectNative();
 
     public void createRoom(
         String playerName
     ) {
 
-        if (!connected) {
+        StringBuilder message =
+            new StringBuilder();
 
-            roomGUI.updateStatus(
-                "Not connected to server."
-            );
+        message.append(
+            "CREATE_ROOM:"
+        );
 
-            return;
-        }
+        message.append(
+            playerName
+        );
+
+        System.out.println(
+            message.toString()
+        );
     }
 
     public void joinRoom(
@@ -54,42 +61,33 @@ public class GameWebSocketClient {
         String playerName
     ) {
 
-        if (!connected) {
+        StringBuilder message =
+            new StringBuilder();
 
-            roomGUI.updateStatus(
-                "Not connected to server."
-            );
+        message.append(
+            "JOIN_ROOM:"
+        );
 
-            return;
-        }
+        message.append(
+            roomCode
+        );
+
+        message.append(
+            ":"
+        );
+
+        message.append(
+            playerName
+        );
+
+        System.out.println(
+            message.toString()
+        );
     }
 
     public boolean isOpen() {
 
-        return connected;
-    }
-
-    public void setConnected(
-        boolean value
-    ) {
-
-        connected = value;
-
-        if (roomGUI != null) {
-
-            if (value) {
-
-                roomGUI.updateStatus(
-                    "Connected to server."
-                );
-
-            } else {
-
-                roomGUI.updateStatus(
-                    "Disconnected from server."
-                );
-            }
-        }
+        return true;
     }
 
     public void sendMove() {
@@ -106,3 +104,4 @@ public class GameWebSocketClient {
         );
     }
 }
+

@@ -165,7 +165,10 @@ public class PlayerSetupGUI extends JFrame {
             return;
         }
 
-        new RoomGUI(playerName);
+        JOptionPane.showMessageDialog(
+            this,
+            "Player name confirmed!"
+        );
 
         dispose();
     }

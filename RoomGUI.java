@@ -94,9 +94,15 @@ public class RoomGUI extends JFrame {
             Box.createVerticalStrut(50)
         );
 
+        StringBuilder playerText =
+            new StringBuilder();
+
+        playerText.append("Player: ");
+        playerText.append(playerName);
+
         JLabel nameLabel =
             new JLabel(
-                "Player: " + playerName
+                playerText.toString()
             );
 
         nameLabel.setForeground(Color.WHITE);
@@ -120,7 +126,9 @@ public class RoomGUI extends JFrame {
         );
 
         JLabel roomCodeLabel =
-            new JLabel("Enter Room Code:");
+            new JLabel(
+                "Enter Room Code:"
+            );
 
         roomCodeLabel.setForeground(Color.WHITE);
 
@@ -290,24 +298,22 @@ public class RoomGUI extends JFrame {
             return;
         }
 
-        roomStatusLabel.setText(
-            "Joining room " + roomCode + "..."
-        );
+        StringBuilder status =
+            new StringBuilder();
 
-        /*
-         * WebSocket connection will be added here next.
-         */
+        status.append("Joining room ");
+        status.append(roomCode);
+        status.append("...");
+
+        roomStatusLabel.setText(
+            status.toString()
+        );
     }
 
     /**
      * Handles creating a room.
      */
     private void createRoom() {
-
-        /*
-         * Room creation will be connected to
-         * the WebSocket server next.
-         */
 
         roomStatusLabel.setText(
             "Creating room..."

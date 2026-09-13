@@ -1,13 +1,13 @@
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.WebSocket;
-import java.util.concurrent.CompletionStage;
 
 /**
  * Handles the WebSocket connection between the game client and server.
+ *
+ * The actual browser WebSocket is implemented through CheerpJ JavaScript
+ * native methods so that the Java application does not depend on
+ * java.net.http.WebSocket.
  */
-public class GameWebSocketClient
-    implements WebSocket.Listener {
+public class GameWebSocketClient {
 
     private JungleKingController controller;
     private RoomGUI roomGUI;
@@ -15,7 +15,7 @@ public class GameWebSocketClient
     private String roomId;
     private String playerName;
 
-    private WebSocket webSocket;
+    private boolean connected = false;
 
     /**
      * Constructor used by the game.
@@ -31,7 +31,9 @@ public class GameWebSocketClient
         this.roomId = roomId;
         this.playerName = playerName;
 
-        connect(serverUri);
+        connect(
+            serverUri.toString()
+        );
     }
 
     /**
@@ -44,36 +46,40 @@ public class GameWebSocketClient
 
         this.roomGUI = roomGUI;
 
-        connect(serverUri);
+        connect(
+            serverUri.toString()
+        );
     }
 
     /**
-     * Connects to the WebSocket server.
+     * Connects to the browser WebSocket.
+     *
+     * The implementation is provided by JavaScript through CheerpJ.
      */
-    private void connect(
-        URI serverUri
-    ) {
-
-        HttpClient client =
-            HttpClient.newHttpClient();
-
-        client.newWebSocketBuilder()
-            .buildAsync(
-                serverUri,
-                this
-            )
-            .thenAccept(
-                new WebSocketOpenHandler(this)
-            )
-            .exceptionally(
-                new WebSocketErrorHandler(this)
-            );
-    }
+    private native void connect(
+        String serverUri
+    );
 
     /**
-     * Called when the connection opens.
+     * Sends a message through the browser WebSocket.
+     *
+     * The implementation is provided by JavaScript through CheerpJ.
      */
-    private void onOpen() {
+    private native void sendNative(
+        String message
+    );
+
+    /**
+     * Returns whether the browser WebSocket is connected.
+     */
+    private native boolean isNativeOpen();
+
+    /**
+     * Called by JavaScript when the WebSocket connection opens.
+     */
+    public void onOpen() {
+
+        connected = true;
 
         if (roomGUI != null) {
 
@@ -107,70 +113,55 @@ public class GameWebSocketClient
     }
 
     /**
-     * Creates a room.
-     *
-     * @param playerName local player name
+     * Called by JavaScript when the WebSocket connection fails.
      */
-    public void createRoom(
-        String playerName
+    public void onError(
+        String errorMessage
     ) {
 
-        StringBuilder message =
-            new StringBuilder();
+        connected = false;
 
-        message.append("{");
-        message.append("\"type\":\"CREATE_ROOM\",");
-        message.append("\"playerName\":\"");
-        message.append(playerName);
-        message.append("\"");
-        message.append("}");
+        if (roomGUI != null) {
 
-        send(
-            message.toString()
+            roomGUI.updateStatus(
+                "Unable to connect to server."
+            );
+        }
+
+        System.out.println(
+            "WebSocket error: "
+            + errorMessage
         );
     }
 
     /**
-     * Joins an existing room.
-     *
-     * @param roomCode room code
-     * @param playerName local player name
+     * Called by JavaScript when the WebSocket closes.
      */
-    public void joinRoom(
-        String roomCode,
-        String playerName
-    ) {
+    public void onClose() {
 
-        StringBuilder message =
-            new StringBuilder();
+        connected = false;
 
-        message.append("{");
-        message.append("\"type\":\"JOIN_ROOM\",");
-        message.append("\"roomId\":\"");
-        message.append(roomCode);
-        message.append("\",");
-        message.append("\"playerName\":\"");
-        message.append(playerName);
-        message.append("\"");
-        message.append("}");
+        if (roomGUI != null) {
 
-        send(
-            message.toString()
-        );
+            roomGUI.updateStatus(
+                "Disconnected from server."
+            );
+        }
     }
 
     /**
-     * Handles incoming messages.
+     * Called by JavaScript whenever a message is received.
      */
-    @Override
-    public CompletionStage<?> onText(
-        WebSocket webSocket,
-        CharSequence data,
-        boolean last
+    public void onMessage(
+        String message
     ) {
 
-        String message =
-            data.toString();
+        if (
+            message == null
+            || message.length() == 0
+        ) {
+            return;
+        }
 
         if (
             message.contains(
@@ -209,6 +200,10 @@ public class GameWebSocketClient
                     "Room is ready!"
                 );
             }
+
+            handleRoomReady(
+                message
+            );
         }
 
         if (
@@ -235,16 +230,58 @@ public class GameWebSocketClient
                 message
             );
         }
+    }
 
-        return WebSocket.Listener.super.onText(
-            webSocket,
-            data,
-            last
+    /**
+     * Creates a room.
+     */
+    public void createRoom(
+        String playerName
+    ) {
+
+        StringBuilder message =
+            new StringBuilder();
+
+        message.append("{");
+        message.append("\"type\":\"CREATE_ROOM\",");
+        message.append("\"playerName\":\"");
+        message.append(playerName);
+        message.append("\"");
+        message.append("}");
+
+        send(
+            message.toString()
         );
     }
 
     /**
-     * Handles a room-created message.
+     * Joins an existing room.
+     */
+    public void joinRoom(
+        String roomCode,
+        String playerName
+    ) {
+
+        StringBuilder message =
+            new StringBuilder();
+
+        message.append("{");
+        message.append("\"type\":\"JOIN_ROOM\",");
+        message.append("\"roomId\":\"");
+        message.append(roomCode);
+        message.append("\",");
+        message.append("\"playerName\":\"");
+        message.append(playerName);
+        message.append("\"");
+        message.append("}");
+
+        send(
+            message.toString()
+        );
+    }
+
+    /**
+     * Handles a ROOM_CREATED message.
      */
     private void handleRoomCreated(
         String message
@@ -282,7 +319,22 @@ public class GameWebSocketClient
     }
 
     /**
-     * Handles a movement message.
+     * Handles a ROOM_READY message.
+     */
+    private void handleRoomReady(
+        String message
+    ) {
+
+        if (roomGUI != null) {
+
+            roomGUI.updateStatus(
+                "Both players are ready!"
+            );
+        }
+    }
+
+    /**
+     * Handles a MOVE message.
      */
     private void handleMove(
         String message
@@ -326,7 +378,7 @@ public class GameWebSocketClient
     }
 
     /**
-     * Sends a movement.
+     * Sends a movement to the server.
      */
     public void sendMove(
         MovePayload payload
@@ -351,87 +403,42 @@ public class GameWebSocketClient
     }
 
     /**
-     * Sends a message.
+     * Sends a message through the browser WebSocket.
      */
     private void send(
         String message
     ) {
 
-        if (webSocket != null) {
+        if (!connected) {
 
-            webSocket.sendText(
-                message,
-                true
+            System.out.println(
+                "WebSocket is not connected."
             );
-        }
-    }
 
-    /**
-     * Checks whether the socket exists.
-     */
-    public boolean isOpen() {
+            if (roomGUI != null) {
 
-        return webSocket != null;
-    }
-
-    /**
-     * Handles successful WebSocket connections.
-     */
-    public static class WebSocketOpenHandler
-        implements java.util.function.Consumer<WebSocket> {
-
-        private GameWebSocketClient client;
-
-        public WebSocketOpenHandler(
-            GameWebSocketClient client
-        ) {
-
-            this.client = client;
-        }
-
-        public void accept(
-            WebSocket socket
-        ) {
-
-            client.webSocket =
-                socket;
-
-            client.onOpen();
-        }
-    }
-
-    /**
-     * Handles connection errors.
-     */
-    public static class WebSocketErrorHandler
-        implements java.util.function.Function<
-            Throwable,
-            Void
-        > {
-
-        private GameWebSocketClient client;
-
-        public WebSocketErrorHandler(
-            GameWebSocketClient client
-        ) {
-
-            this.client = client;
-        }
-
-        public Void apply(
-            Throwable error
-        ) {
-
-            if (client.roomGUI != null) {
-
-                client.roomGUI.updateStatus(
-                    "Unable to connect to server."
+                roomGUI.updateStatus(
+                    "Not connected to server."
                 );
             }
 
-            error.printStackTrace();
-
-            return null;
+            return;
         }
+
+        sendNative(
+            message
+        );
+    }
+
+    /**
+     * Returns whether the WebSocket is open.
+     */
+    public boolean isOpen() {
+
+        if (!connected) {
+            return false;
+        }
+
+        return isNativeOpen();
     }
 }

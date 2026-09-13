@@ -32,7 +32,7 @@ async function Java_GameWebSocketClient_connectNative(
 ) {
 
     console.log(
-        "Java requested WebSocket connection."
+        "Java requested browser WebSocket."
     );
 
     const socket =
@@ -43,36 +43,21 @@ async function Java_GameWebSocketClient_connectNative(
     socket.onopen = function () {
 
         console.log(
-            "Browser WebSocket connected."
-        );
-
-        lib.GameWebSocketClient.setConnected(
-            self,
-            true
+            "BROWSER WEBSOCKET CONNECTED"
         );
     };
 
     socket.onerror = function () {
 
         console.log(
-            "Browser WebSocket error."
-        );
-
-        lib.GameWebSocketClient.setConnected(
-            self,
-            false
+            "BROWSER WEBSOCKET ERROR"
         );
     };
 
     socket.onclose = function () {
 
         console.log(
-            "Browser WebSocket closed."
-        );
-
-        lib.GameWebSocketClient.setConnected(
-            self,
-            false
+            "BROWSER WEBSOCKET CLOSED"
         );
     };
 }
@@ -85,11 +70,7 @@ async function Java_GameWebSocketClient_sendCreateRoomNative(
 ) {
 
     console.log(
-        "Create room requested from Java."
-    );
-
-    console.log(
-        playerName
+        "CREATE ROOM NATIVE METHOD CALLED"
     );
 }
 
@@ -102,15 +83,7 @@ async function Java_GameWebSocketClient_sendJoinRoomNative(
 ) {
 
     console.log(
-        "Join room requested from Java."
-    );
-
-    console.log(
-        roomCode
-    );
-
-    console.log(
-        playerName
+        "JOIN ROOM NATIVE METHOD CALLED"
     );
 }
 
@@ -122,6 +95,7 @@ async function Java_GameWebSocketClient_sendJoinRoomNative(
     );
 
     await cheerpjInit({
+
         version: 11,
 
         natives: {
@@ -133,6 +107,7 @@ async function Java_GameWebSocketClient_sendJoinRoomNative(
             Java_GameWebSocketClient_sendJoinRoomNative
 
         }
+
     });
 
     console.log(

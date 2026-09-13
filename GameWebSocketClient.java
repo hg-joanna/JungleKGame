@@ -41,11 +41,9 @@ public class GameWebSocketClient {
 
         if (!connected) {
 
-            if (roomGUI != null) {
-                roomGUI.updateStatus(
-                    "Not connected to server."
-                );
-            }
+            roomGUI.updateStatus(
+                "Not connected to server."
+            );
 
             return;
         }
@@ -66,11 +64,9 @@ public class GameWebSocketClient {
 
         if (!connected) {
 
-            if (roomGUI != null) {
-                roomGUI.updateStatus(
-                    "Not connected to server."
-                );
-            }
+            roomGUI.updateStatus(
+                "Not connected to server."
+            );
 
             return;
         }
@@ -89,20 +85,6 @@ public class GameWebSocketClient {
     public boolean isOpen() {
 
         return connected;
-    }
-
-    public void sendMove() {
-
-        System.out.println(
-            "Send move requested."
-        );
-    }
-
-    public void processRemoteMove() {
-
-        System.out.println(
-            "Remote move requested."
-        );
     }
 
     public void setConnected(
@@ -126,5 +108,19 @@ public class GameWebSocketClient {
                 );
             }
         }
+    }
+
+    public void sendMove() {
+
+        System.out.println(
+            "Send move requested."
+        );
+    }
+
+    public void processRemoteMove() {
+
+        System.out.println(
+            "Remote move requested."
+        );
     }
 }

@@ -33,7 +33,7 @@ public class GameWebSocketClient {
         connectNative();
     }
 
-    private native void connectNative();
+    private static native void connectNative();
 
     public void createRoom(
         String playerName
@@ -47,15 +47,7 @@ public class GameWebSocketClient {
 
             return;
         }
-
-        sendCreateRoomNative(
-            playerName
-        );
     }
-
-    private native void sendCreateRoomNative(
-        String playerName
-    );
 
     public void joinRoom(
         String roomCode,
@@ -70,17 +62,7 @@ public class GameWebSocketClient {
 
             return;
         }
-
-        sendJoinRoomNative(
-            roomCode,
-            playerName
-        );
     }
-
-    private native void sendJoinRoomNative(
-        String roomCode,
-        String playerName
-    );
 
     public boolean isOpen() {
 

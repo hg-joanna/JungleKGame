@@ -27,12 +27,15 @@
 <script>
 
 async function Java_GameWebSocketClient_connectNative(
-    lib,
-    self
+    lib
 ) {
 
     console.log(
-        "Java requested browser WebSocket."
+        "NATIVE METHOD WORKS"
+    );
+
+    console.log(
+        "Now testing browser WebSocket."
     );
 
     const socket =
@@ -63,31 +66,6 @@ async function Java_GameWebSocketClient_connectNative(
 }
 
 
-async function Java_GameWebSocketClient_sendCreateRoomNative(
-    lib,
-    self,
-    playerName
-) {
-
-    console.log(
-        "CREATE ROOM NATIVE METHOD CALLED"
-    );
-}
-
-
-async function Java_GameWebSocketClient_sendJoinRoomNative(
-    lib,
-    self,
-    roomCode,
-    playerName
-) {
-
-    console.log(
-        "JOIN ROOM NATIVE METHOD CALLED"
-    );
-}
-
-
 (async function () {
 
     console.log(
@@ -99,13 +77,7 @@ async function Java_GameWebSocketClient_sendJoinRoomNative(
         version: 11,
 
         natives: {
-
-            Java_GameWebSocketClient_connectNative,
-
-            Java_GameWebSocketClient_sendCreateRoomNative,
-
-            Java_GameWebSocketClient_sendJoinRoomNative
-
+            Java_GameWebSocketClient_connectNative
         }
 
     });

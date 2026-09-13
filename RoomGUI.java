@@ -534,6 +534,38 @@ public class RoomGUI extends JFrame {
     }
 
     /**
+     * Shows that both players are ready.
+     */
+    public void showRoomReady(
+        String player1Name,
+        String player2Name
+    ) {
+
+        StringBuilder status =
+            new StringBuilder();
+
+        status.append(
+            "Room ready: "
+        );
+
+        status.append(
+            player1Name
+        );
+
+        status.append(
+            " vs "
+        );
+
+        status.append(
+            player2Name
+        );
+
+        updateStatus(
+            status.toString()
+        );
+    }
+
+    /**
      * Updates the status text.
      *
      * @param message status message
@@ -604,3 +636,4 @@ public class RoomGUI extends JFrame {
         );
     }
 }
+

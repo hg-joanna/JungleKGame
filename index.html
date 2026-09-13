@@ -34,7 +34,97 @@
     );
 
     await cheerpjInit({
-        version: 11
+        version: 11,
+
+        natives: {
+
+            "GameWebSocketClient.nativeConnect":
+                function (client) {
+
+                    console.log(
+                        "Opening Render WebSocket..."
+                    );
+
+                    var socket =
+                        new WebSocket(
+                            "wss://junglekgame.onrender.com/"
+                        );
+
+                    window.jungleKingSocket =
+                        socket;
+
+                    socket.onopen =
+                        function () {
+
+                            console.log(
+                                "Render WebSocket connected."
+                            );
+
+                            client.onConnected();
+                        };
+
+                    socket.onmessage =
+                        function (event) {
+
+                            console.log(
+                                "Render message:",
+                                event.data
+                            );
+
+                            client.onMessage(
+                                event.data
+                            );
+                        };
+
+                    socket.onerror =
+                        function (error) {
+
+                            console.log(
+                                "Render WebSocket error.",
+                                error
+                            );
+
+                            client.onConnectionFailed();
+                        };
+
+                    socket.onclose =
+                        function () {
+
+                            console.log(
+                                "Render WebSocket closed."
+                            );
+                        };
+                },
+
+            "GameWebSocketClient.nativeSend":
+                function (
+                    client,
+                    message
+                ) {
+
+                    console.log(
+                        "Sending to Render:",
+                        message
+                    );
+
+                    if (
+                        window.jungleKingSocket
+                        && window.jungleKingSocket.readyState
+                            === WebSocket.OPEN
+                    ) {
+
+                        window.jungleKingSocket.send(
+                            message
+                        );
+
+                    } else {
+
+                        console.log(
+                            "WebSocket is not open."
+                        );
+                    }
+                }
+        }
     });
 
     console.log(

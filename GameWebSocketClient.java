@@ -10,17 +10,15 @@ public class GameWebSocketClient
     implements WebSocket.Listener {
 
     private JungleKingController controller;
+    private RoomGUI roomGUI;
+
     private String roomId;
     private String playerName;
+
     private WebSocket webSocket;
 
     /**
-     * Creates a WebSocket client.
-     *
-     * @param serverUri WebSocket server URI
-     * @param controller game controller
-     * @param roomId room ID
-     * @param playerName local player name
+     * Constructor used by the game.
      */
     public GameWebSocketClient(
         URI serverUri,
@@ -32,6 +30,29 @@ public class GameWebSocketClient
         this.controller = controller;
         this.roomId = roomId;
         this.playerName = playerName;
+
+        connect(serverUri);
+    }
+
+    /**
+     * Constructor used by the room GUI.
+     */
+    public GameWebSocketClient(
+        URI serverUri,
+        RoomGUI roomGUI
+    ) {
+
+        this.roomGUI = roomGUI;
+
+        connect(serverUri);
+    }
+
+    /**
+     * Connects to the WebSocket server.
+     */
+    private void connect(
+        URI serverUri
+    ) {
 
         HttpClient client =
             HttpClient.newHttpClient();
@@ -45,38 +66,101 @@ public class GameWebSocketClient
                 new WebSocketOpenHandler(this)
             )
             .exceptionally(
-                new WebSocketErrorHandler()
+                new WebSocketErrorHandler(this)
             );
     }
 
     /**
-     * Called after the WebSocket connection opens.
+     * Called when the connection opens.
      */
     private void onOpen() {
 
-        StringBuilder joinMessage =
-            new StringBuilder();
+        if (roomGUI != null) {
 
-        joinMessage.append("{");
-        joinMessage.append("\"type\":\"JOIN_ROOM\",");
-        joinMessage.append("\"roomId\":\"");
-        joinMessage.append(roomId);
-        joinMessage.append("\",");
-        joinMessage.append("\"playerName\":\"");
-        joinMessage.append(playerName);
-        joinMessage.append("\"");
-        joinMessage.append("}");
+            roomGUI.updateStatus(
+                "Connected to server."
+            );
+        }
 
-        send(joinMessage.toString());
+        if (
+            controller != null
+            && roomId != null
+        ) {
+
+            StringBuilder message =
+                new StringBuilder();
+
+            message.append("{");
+            message.append("\"type\":\"JOIN_ROOM\",");
+            message.append("\"roomId\":\"");
+            message.append(roomId);
+            message.append("\",");
+            message.append("\"playerName\":\"");
+            message.append(playerName);
+            message.append("\"");
+            message.append("}");
+
+            send(
+                message.toString()
+            );
+        }
     }
 
     /**
-     * Handles messages received from the server.
+     * Creates a room.
      *
-     * @param webSocket WebSocket connection
-     * @param data received data
-     * @param last whether this is the final message fragment
-     * @return completion stage
+     * @param playerName local player name
+     */
+    public void createRoom(
+        String playerName
+    ) {
+
+        StringBuilder message =
+            new StringBuilder();
+
+        message.append("{");
+        message.append("\"type\":\"CREATE_ROOM\",");
+        message.append("\"playerName\":\"");
+        message.append(playerName);
+        message.append("\"");
+        message.append("}");
+
+        send(
+            message.toString()
+        );
+    }
+
+    /**
+     * Joins an existing room.
+     *
+     * @param roomCode room code
+     * @param playerName local player name
+     */
+    public void joinRoom(
+        String roomCode,
+        String playerName
+    ) {
+
+        StringBuilder message =
+            new StringBuilder();
+
+        message.append("{");
+        message.append("\"type\":\"JOIN_ROOM\",");
+        message.append("\"roomId\":\"");
+        message.append(roomCode);
+        message.append("\",");
+        message.append("\"playerName\":\"");
+        message.append(playerName);
+        message.append("\"");
+        message.append("}");
+
+        send(
+            message.toString()
+        );
+    }
+
+    /**
+     * Handles incoming messages.
      */
     @Override
     public CompletionStage<?> onText(
@@ -90,41 +174,66 @@ public class GameWebSocketClient
 
         if (
             message.contains(
+                "\"type\":\"ROOM_CREATED\""
+            )
+        ) {
+
+            handleRoomCreated(
+                message
+            );
+        }
+
+        if (
+            message.contains(
+                "\"type\":\"ROOM_WAITING\""
+            )
+        ) {
+
+            if (roomGUI != null) {
+
+                roomGUI.updateStatus(
+                    "Waiting for another player..."
+                );
+            }
+        }
+
+        if (
+            message.contains(
+                "\"type\":\"ROOM_READY\""
+            )
+        ) {
+
+            if (roomGUI != null) {
+
+                roomGUI.updateStatus(
+                    "Room is ready!"
+                );
+            }
+        }
+
+        if (
+            message.contains(
+                "\"type\":\"ROOM_ERROR\""
+            )
+        ) {
+
+            if (roomGUI != null) {
+
+                roomGUI.updateStatus(
+                    "Room error."
+                );
+            }
+        }
+
+        if (
+            message.contains(
                 "\"type\":\"MOVE\""
             )
         ) {
 
-            int payloadStart =
-                message.indexOf(
-                    "\"payload\":\""
-                ) + 11;
-
-            int payloadEnd =
-                message.indexOf(
-                    "\"",
-                    payloadStart
-                );
-
-            if (
-                payloadStart > 10
-                && payloadEnd > payloadStart
-            ) {
-
-                String payloadStr =
-                    message.substring(
-                        payloadStart,
-                        payloadEnd
-                    );
-
-                MovePayload payload =
-                    MovePayload.deserialize(
-                        payloadStr
-                    );
-
-                controller.processRemoteMove(
-                    payload
-                );
-            }
+            handleMove(
+                message
+            );
         }
 
         return WebSocket.Listener.super.onText(
@@ -135,56 +244,138 @@ public class GameWebSocketClient
     }
 
     /**
-     * Sends a move to the server.
-     *
-     * @param payload move information
+     * Handles a room-created message.
+     */
+    private void handleRoomCreated(
+        String message
+    ) {
+
+        int codeStart =
+            message.indexOf(
+                "\"roomId\":\""
+            ) + 10;
+
+        int codeEnd =
+            message.indexOf(
+                "\"",
+                codeStart
+            );
+
+        if (
+            codeStart > 9
+            && codeEnd > codeStart
+        ) {
+
+            String roomCode =
+                message.substring(
+                    codeStart,
+                    codeEnd
+                );
+
+            if (roomGUI != null) {
+
+                roomGUI.showCreatedRoom(
+                    roomCode
+                );
+            }
+        }
+    }
+
+    /**
+     * Handles a movement message.
+     */
+    private void handleMove(
+        String message
+    ) {
+
+        if (controller == null) {
+            return;
+        }
+
+        int payloadStart =
+            message.indexOf(
+                "\"payload\":\""
+            ) + 11;
+
+        int payloadEnd =
+            message.indexOf(
+                "\"",
+                payloadStart
+            );
+
+        if (
+            payloadStart > 10
+            && payloadEnd > payloadStart
+        ) {
+
+            String payloadStr =
+                message.substring(
+                    payloadStart,
+                    payloadEnd
+                );
+
+            MovePayload payload =
+                MovePayload.deserialize(
+                    payloadStr
+                );
+
+            controller.processRemoteMove(
+                payload
+            );
+        }
+    }
+
+    /**
+     * Sends a movement.
      */
     public void sendMove(
         MovePayload payload
     ) {
 
-        StringBuilder moveMessage =
+        StringBuilder message =
             new StringBuilder();
 
-        moveMessage.append("{");
-        moveMessage.append("\"type\":\"MOVE\",");
-        moveMessage.append("\"roomId\":\"");
-        moveMessage.append(roomId);
-        moveMessage.append("\",");
-        moveMessage.append("\"payload\":\"");
-        moveMessage.append(payload.serialize());
-        moveMessage.append("\"");
-        moveMessage.append("}");
+        message.append("{");
+        message.append("\"type\":\"MOVE\",");
+        message.append("\"roomId\":\"");
+        message.append(roomId);
+        message.append("\",");
+        message.append("\"payload\":\"");
+        message.append(payload.serialize());
+        message.append("\"");
+        message.append("}");
 
-        send(moveMessage.toString());
+        send(
+            message.toString()
+        );
     }
 
     /**
-     * Sends a text message.
-     *
-     * @param text message
+     * Sends a message.
      */
-    private void send(String text) {
+    private void send(
+        String message
+    ) {
 
         if (webSocket != null) {
+
             webSocket.sendText(
-                text,
+                message,
                 true
             );
         }
     }
 
     /**
-     * Determines whether the WebSocket exists.
-     *
-     * @return true if connected
+     * Checks whether the socket exists.
      */
     public boolean isOpen() {
+
         return webSocket != null;
     }
 
     /**
-     * Listener used when the WebSocket opens.
+     * Handles successful WebSocket connections.
      */
     public static class WebSocketOpenHandler
         implements java.util.function.Consumer<WebSocket> {
@@ -194,17 +385,23 @@ public class GameWebSocketClient
         public WebSocketOpenHandler(
             GameWebSocketClient client
         ) {
+
             this.client = client;
         }
 
-        public void accept(WebSocket webSocket) {
-            client.webSocket = webSocket;
+        public void accept(
+            WebSocket socket
+        ) {
+
+            client.webSocket =
+                socket;
+
             client.onOpen();
         }
     }
 
     /**
-     * Listener used when the WebSocket connection fails.
+     * Handles connection errors.
      */
     public static class WebSocketErrorHandler
         implements java.util.function.Function<
@@ -212,7 +409,25 @@ public class GameWebSocketClient
             Void
         > {
 
-        public Void apply(Throwable error) {
+        private GameWebSocketClient client;
+
+        public WebSocketErrorHandler(
+            GameWebSocketClient client
+        ) {
+
+            this.client = client;
+        }
+
+        public Void apply(
+            Throwable error
+        ) {
+
+            if (client.roomGUI != null) {
+
+                client.roomGUI.updateStatus(
+                    "Unable to connect to server."
+                );
+            }
 
             error.printStackTrace();
 

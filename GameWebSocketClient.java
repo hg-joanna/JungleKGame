@@ -40,21 +40,20 @@ public class GameWebSocketClient {
         String playerName
     ) {
 
-        System.out.println(
-            "CREATE_ROOM requested."
+        StringBuilder message =
+            new StringBuilder();
+
+        message.append(
+            "CREATE_ROOM:"
+        );
+
+        message.append(
+            playerName
         );
 
         System.out.println(
-            "Player name: " + playerName
+            message.toString()
         );
-
-        /*
-         * Test only.
-         *
-         * This confirms that the Java client can
-         * receive a request from RoomGUI without
-         * using Java's WebSocket classes.
-         */
 
         roomGUI.updateStatus(
             "JavaScript bridge test."

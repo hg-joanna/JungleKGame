@@ -4,94 +4,143 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 
 /**
- * Represents the graphical user interface of the player setup process
+ * Represents the graphical user interface of the player setup process.
  */
 public class PlayerSetupGUI extends JFrame {
 
-    /** Text field for player1 */
-    private JTextField player1NameField;
+    /** Text field for the local player's name. */
+    private JTextField playerNameField;
 
-    /** Text field for player2 */
-    private JTextField player2NameField;
+    /** Name of the local player. */
+    private String playerName;
 
-    /** Confirmation button for names */
+    /** Confirmation button for the player name. */
     private JButton confirmButton;
 
-    /** Name of player1 */
-    private String player1Name;
-
-    /** Name of player2 */
-    private String player2Name;
-
     /**
-     * Instantiates the graphical user interface for the player setup
+     * Instantiates the graphical user interface for player setup.
      */
     public PlayerSetupGUI() {
+
         setTitle("Player Setup");
         setSize(1300, 900);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLocationRelativeTo(null);
 
-        ImageIcon backgroundIcon = new ImageIcon(
-            getClass().getResource("/Resources/bg_darker.png")
+        ImageIcon backgroundIcon =
+            new ImageIcon(
+                getClass().getResource(
+                    "/Resources/bg_darker.png"
+                )
+            );
+
+        JLabel backgroundLabel =
+            new JLabel(backgroundIcon);
+
+        backgroundLabel.setLayout(
+            new BorderLayout()
         );
 
-        JLabel backgroundLabel = new JLabel(backgroundIcon);
-        backgroundLabel.setLayout(new BorderLayout());
         add(backgroundLabel);
 
-        ImageIcon logo = new ImageIcon(
-            getClass().getResource("/Resources/logo.png")
-        );
+        ImageIcon logo =
+            new ImageIcon(
+                getClass().getResource(
+                    "/Resources/logo.png"
+                )
+            );
 
         setIconImage(logo.getImage());
 
-        JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        JPanel centerPanel =
+            new JPanel();
+
+        centerPanel.setLayout(
+            new BoxLayout(
+                centerPanel,
+                BoxLayout.Y_AXIS
+            )
+        );
+
         centerPanel.setOpaque(false);
 
-        centerPanel.add(Box.createVerticalStrut(150));
+        centerPanel.add(
+            Box.createVerticalStrut(200)
+        );
 
-        JLabel player1Label = new JLabel("Enter Player 1 Name:");
-        player1Label.setForeground(Color.WHITE);
-        player1Label.setFont(new Font("Arial", Font.PLAIN, 18));
-        player1Label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel playerLabel =
+            new JLabel("Enter Your Name:");
 
-        player1NameField = new JTextField();
-        player1NameField.setFont(new Font("Arial", Font.PLAIN, 18));
-        player1NameField.setMaximumSize(new Dimension(300, 40));
-        player1NameField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        playerLabel.setForeground(Color.WHITE);
 
-        JLabel player2Label = new JLabel("Enter Player 2 Name:");
-        player2Label.setForeground(Color.WHITE);
-        player2Label.setFont(new Font("Arial", Font.PLAIN, 18));
-        player2Label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        playerLabel.setFont(
+            new Font(
+                "Arial",
+                Font.PLAIN,
+                18
+            )
+        );
 
-        player2NameField = new JTextField();
-        player2NameField.setFont(new Font("Arial", Font.PLAIN, 18));
-        player2NameField.setMaximumSize(new Dimension(300, 40));
-        player2NameField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        playerLabel.setAlignmentX(
+            Component.CENTER_ALIGNMENT
+        );
 
-        centerPanel.add(player1Label);
-        centerPanel.add(player1NameField);
-        centerPanel.add(Box.createVerticalStrut(20));
-        centerPanel.add(player2Label);
-        centerPanel.add(player2NameField);
+        playerNameField =
+            new JTextField();
 
-        centerPanel.add(Box.createVerticalStrut(50));
+        playerNameField.setFont(
+            new Font(
+                "Arial",
+                Font.PLAIN,
+                18
+            )
+        );
 
-        confirmButton = new JButton("Confirm");
-        confirmButton.setFont(new Font("Arial", Font.PLAIN, 18));
-        confirmButton.setPreferredSize(new Dimension(150, 50));
-        confirmButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        playerNameField.setMaximumSize(
+            new Dimension(300, 40)
+        );
+
+        playerNameField.setAlignmentX(
+            Component.CENTER_ALIGNMENT
+        );
+
+        centerPanel.add(playerLabel);
+        centerPanel.add(playerNameField);
+
+        centerPanel.add(
+            Box.createVerticalStrut(50)
+        );
+
+        confirmButton =
+            new JButton("Confirm");
+
+        confirmButton.setFont(
+            new Font(
+                "Arial",
+                Font.PLAIN,
+                18
+            )
+        );
+
+        confirmButton.setPreferredSize(
+            new Dimension(150, 50)
+        );
+
+        confirmButton.setAlignmentX(
+            Component.CENTER_ALIGNMENT
+        );
 
         confirmButton.addActionListener(
             new ConfirmButtonListener(this)
         );
 
         centerPanel.add(confirmButton);
-        backgroundLabel.add(centerPanel, BorderLayout.CENTER);
+
+        backgroundLabel.add(
+            centerPanel,
+            BorderLayout.CENTER
+        );
 
         setVisible(true);
     }
@@ -99,37 +148,34 @@ public class PlayerSetupGUI extends JFrame {
     /**
      * Handles the Confirm button click.
      */
-    private void confirmPlayers() {
+    private void confirmPlayer() {
 
-        player1Name = player1NameField.getText().trim();
-        player2Name = player2NameField.getText().trim();
+        playerName =
+            playerNameField.getText().trim();
 
-        if (player1Name.isEmpty() || player2Name.isEmpty()) {
+        if (playerName.isEmpty()) {
+
             JOptionPane.showMessageDialog(
                 this,
-                "Player names cannot be empty!",
+                "Player name cannot be empty!",
                 "Error",
                 JOptionPane.ERROR_MESSAGE
             );
+
             return;
         }
 
-        if (player1Name.equals(player2Name)) {
-            JOptionPane.showMessageDialog(
-                this,
-                "Player names must be different!",
-                "Error",
-                JOptionPane.ERROR_MESSAGE
-            );
-            return;
-        }
-
-        JOptionPane.showMessageDialog(
-            this,
-            "Players confirmed."
+        /*
+         * Temporary local flow.
+         *
+         * The room/multiplayer system will be connected here next.
+         * For now, the local player is passed forward as Player 1.
+         */
+        new CardSelectionController(
+            playerName,
+            "Waiting for Player 2",
+            playerName
         );
-
-        new CardSelectionController(player1Name, player2Name);
 
         dispose();
     }
@@ -137,22 +183,28 @@ public class PlayerSetupGUI extends JFrame {
     /**
      * Named listener class for the Confirm button.
      */
-    public static class ConfirmButtonListener implements ActionListener {
+    public static class ConfirmButtonListener
+        implements ActionListener {
 
         private PlayerSetupGUI gui;
 
-        public ConfirmButtonListener(PlayerSetupGUI gui) {
+        public ConfirmButtonListener(
+            PlayerSetupGUI gui
+        ) {
             this.gui = gui;
         }
 
-        public void actionPerformed(ActionEvent e) {
-            gui.confirmPlayers();
+        public void actionPerformed(
+            ActionEvent e
+        ) {
+            gui.confirmPlayer();
         }
     }
 
     /**
-     * Main method
-     * @param args main method
+     * Main method.
+     *
+     * @param args main method arguments
      */
     public static void main(String[] args) {
         new PlayerSetupGUI();

@@ -1,4 +1,4 @@
-    
+
 public class GameWebSocketClient {
 
     private JungleKingController controller;
@@ -51,20 +51,21 @@ public class GameWebSocketClient {
             playerName
         );
 
-        String finalMessage =
-            message.toString();
-
         System.out.println(
-            finalMessage
-        );
-
-        sendToJavaScript(
-            finalMessage
+            message.toString()
         );
 
         roomGUI.updateStatus(
-            "Create room request sent."
+            "Sending create room request..."
         );
+
+        /*
+         * JavaScript WebSocket connection will be
+         * connected separately from Java.
+         *
+         * This method currently confirms that the
+         * Java request reaches this point safely.
+         */
     }
 
     public void joinRoom(
@@ -91,25 +92,14 @@ public class GameWebSocketClient {
             playerName
         );
 
-        String finalMessage =
-            message.toString();
-
         System.out.println(
-            finalMessage
-        );
-
-        sendToJavaScript(
-            finalMessage
+            message.toString()
         );
 
         roomGUI.updateStatus(
-            "Join room request sent."
+            "Sending join room request..."
         );
     }
-
-    public static native void sendToJavaScript(
-        String message
-    );
 
     public boolean isOpen() {
 

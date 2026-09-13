@@ -1,29 +1,18 @@
+
 const http = require('http');
 const WebSocket = require('ws');
 
 const PORT = process.env.PORT || 8080;
 
-const server = http.createServer((req, res) => {
-    res.writeHead(200, {
-        'Content-Type': 'text/plain'
-    });
-
-    res.end(
-        'Jungle King WebSocket Server is Live!'
-    );
-});
-
-const wss =
-    new WebSocket.Server({
-        server
-    });
-
 const rooms = {};
 
-/**
- * Generates a random 4-character room code.
- * Uses uppercase letters and numbers.
+
+/*
+ * ---------------------------------------------------------
+ * Utility functions
+ * ---------------------------------------------------------
  */
+
 function generateRoomCode() {
 
     const characters =
@@ -56,18 +45,969 @@ function generateRoomCode() {
     return roomCode;
 }
 
+
+function sendJson(
+    res,
+    statusCode,
+    data
+) {
+
+    res.writeHead(
+        statusCode,
+        {
+            'Content-Type':
+                'application/json',
+            'Access-Control-Allow-Origin':
+                '*',
+            'Access-Control-Allow-Methods':
+                'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers':
+                'Content-Type'
+        }
+    );
+
+    res.end(
+        JSON.stringify(data)
+    );
+}
+
+
+function getRequestBody(
+    req
+) {
+
+    return new Promise(
+        (
+            resolve,
+            reject
+        ) => {
+
+            let body = '';
+
+            req.on(
+                'data',
+                (chunk) => {
+
+                    body +=
+                        chunk.toString();
+                }
+            );
+
+            req.on(
+                'end',
+                () => {
+
+                    if (
+                        body.length === 0
+                    ) {
+
+                        resolve({});
+                        return;
+                    }
+
+                    try {
+
+                        resolve(
+                            JSON.parse(body)
+                        );
+
+                    } catch (error) {
+
+                        reject(error);
+                    }
+                }
+            );
+
+            req.on(
+                'error',
+                (error) => {
+
+                    reject(error);
+                }
+            );
+        }
+    );
+}
+
+
+function getRoomPlayers(
+    room
+) {
+
+    return room.players.map(
+        (player) => {
+
+            return {
+                playerName:
+                    player.playerName,
+
+                playerNumber:
+                    player.playerNumber,
+
+                cardSelection:
+                    player.cardSelection
+            };
+        }
+    );
+}
+
+
+function getRoomState(
+    roomId
+) {
+
+    const room =
+        rooms[roomId];
+
+    if (!room) {
+
+        return null;
+    }
+
+    return {
+        roomId:
+            roomId,
+
+        playerCount:
+            room.players.length,
+
+        players:
+            getRoomPlayers(room),
+
+        ready:
+            room.players.length === 2,
+
+        startingPlayer:
+            room.startingPlayer,
+
+        moves:
+            room.moves
+    };
+}
+
+
+/*
+ * ---------------------------------------------------------
+ * HTTP API
+ * ---------------------------------------------------------
+ *
+ * These endpoints are used by the future HTTP-based
+ * Java/CheerpJ client.
+ *
+ * WebSocket functionality remains below.
+ * ---------------------------------------------------------
+ */
+
+const server =
+    http.createServer(
+        async (req, res) => {
+
+            /*
+             * CORS
+             */
+
+            if (
+                req.method === 'OPTIONS'
+            ) {
+
+                res.writeHead(
+                    204,
+                    {
+                        'Access-Control-Allow-Origin':
+                            '*',
+
+                        'Access-Control-Allow-Methods':
+                            'GET, POST, OPTIONS',
+
+                        'Access-Control-Allow-Headers':
+                            'Content-Type'
+                    }
+                );
+
+                res.end();
+
+                return;
+            }
+
+
+            /*
+             * Basic server status
+             */
+
+            if (
+                req.method === 'GET'
+                && req.url === '/'
+            ) {
+
+                sendJson(
+                    res,
+                    200,
+                    {
+                        status:
+                            'online',
+
+                        message:
+                            'Jungle King Server is Live!'
+                    }
+                );
+
+                return;
+            }
+
+
+            /*
+             * -------------------------------------------------
+             * CREATE ROOM
+             * POST /api/create-room
+             *
+             * Body:
+             * {
+             *     "playerName": "Alice"
+             * }
+             * -------------------------------------------------
+             */
+
+            if (
+                req.method === 'POST'
+                && req.url === '/api/create-room'
+            ) {
+
+                try {
+
+                    const data =
+                        await getRequestBody(req);
+
+                    const playerName =
+                        data.playerName;
+
+                    if (
+                        !playerName
+                        || playerName.trim() === ''
+                    ) {
+
+                        sendJson(
+                            res,
+                            400,
+                            {
+                                type:
+                                    'ROOM_ERROR',
+
+                                message:
+                                    'Invalid player name.'
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    const roomId =
+                        generateRoomCode();
+
+
+                    rooms[roomId] = {
+
+                        players: [],
+
+                        startingPlayer:
+                            null,
+
+                        moves: []
+                    };
+
+
+                    rooms[roomId].players.push(
+                        {
+                            ws:
+                                null,
+
+                            playerName:
+                                playerName.trim(),
+
+                            playerNumber:
+                                1,
+
+                            cardSelection:
+                                null
+                        }
+                    );
+
+
+                    console.log(
+                        playerName
+                        + ' created HTTP room '
+                        + roomId
+                    );
+
+
+                    sendJson(
+                        res,
+                        200,
+                        {
+                            type:
+                                'ROOM_CREATED',
+
+                            roomId:
+                                roomId,
+
+                            playerNumber:
+                                1
+                        }
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        'Create room error:',
+                        error
+                    );
+
+                    sendJson(
+                        res,
+                        500,
+                        {
+                            type:
+                                'ROOM_ERROR',
+
+                            message:
+                                'Unable to create room.'
+                        }
+                    );
+                }
+
+                return;
+            }
+
+
+            /*
+             * -------------------------------------------------
+             * JOIN ROOM
+             * POST /api/join-room
+             *
+             * Body:
+             * {
+             *     "roomId": "ABCD",
+             *     "playerName": "Bob"
+             * }
+             * -------------------------------------------------
+             */
+
+            if (
+                req.method === 'POST'
+                && req.url === '/api/join-room'
+            ) {
+
+                try {
+
+                    const data =
+                        await getRequestBody(req);
+
+                    const roomId =
+                        data.roomId
+                            ? data.roomId
+                                .trim()
+                                .toUpperCase()
+                            : '';
+
+                    const playerName =
+                        data.playerName;
+
+
+                    if (
+                        !roomId
+                        || roomId.length !== 4
+                    ) {
+
+                        sendJson(
+                            res,
+                            400,
+                            {
+                                type:
+                                    'ROOM_ERROR',
+
+                                message:
+                                    'Invalid room code.'
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    if (
+                        !playerName
+                        || playerName.trim() === ''
+                    ) {
+
+                        sendJson(
+                            res,
+                            400,
+                            {
+                                type:
+                                    'ROOM_ERROR',
+
+                                message:
+                                    'Invalid player name.'
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    if (
+                        !rooms[roomId]
+                    ) {
+
+                        sendJson(
+                            res,
+                            404,
+                            {
+                                type:
+                                    'ROOM_ERROR',
+
+                                message:
+                                    'Room does not exist.'
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    const room =
+                        rooms[roomId];
+
+
+                    if (
+                        room.players.length >= 2
+                    ) {
+
+                        sendJson(
+                            res,
+                            400,
+                            {
+                                type:
+                                    'ROOM_ERROR',
+
+                                message:
+                                    'Room is full.'
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    const duplicate =
+                        room.players.some(
+                            (player) => {
+
+                                return (
+                                    player.playerName
+                                    === playerName.trim()
+                                );
+                            }
+                        );
+
+
+                    if (duplicate) {
+
+                        sendJson(
+                            res,
+                            400,
+                            {
+                                type:
+                                    'ROOM_ERROR',
+
+                                message:
+                                    'Player name is already in this room.'
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    room.players.push(
+                        {
+                            ws:
+                                null,
+
+                            playerName:
+                                playerName.trim(),
+
+                            playerNumber:
+                                2,
+
+                            cardSelection:
+                                null
+                        }
+                    );
+
+
+                    console.log(
+                        playerName
+                        + ' joined HTTP room '
+                        + roomId
+                    );
+
+
+                    sendJson(
+                        res,
+                        200,
+                        {
+                            type:
+                                'ROOM_READY',
+
+                            roomId:
+                                roomId,
+
+                            player1Name:
+                                room.players[0]
+                                    .playerName,
+
+                            player2Name:
+                                room.players[1]
+                                    .playerName,
+
+                            playerNumber:
+                                2
+                        }
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        'Join room error:',
+                        error
+                    );
+
+                    sendJson(
+                        res,
+                        500,
+                        {
+                            type:
+                                'ROOM_ERROR',
+
+                            message:
+                                'Unable to join room.'
+                        }
+                    );
+                }
+
+                return;
+            }
+
+
+            /*
+             * -------------------------------------------------
+             * GET ROOM STATUS
+             * GET /api/room/ABCD
+             * -------------------------------------------------
+             */
+
+            if (
+                req.method === 'GET'
+                && req.url.startsWith(
+                    '/api/room/'
+                )
+            ) {
+
+                const roomId =
+                    req.url
+                        .substring(
+                            '/api/room/'.length
+                        )
+                        .trim()
+                        .toUpperCase();
+
+
+                if (
+                    !rooms[roomId]
+                ) {
+
+                    sendJson(
+                        res,
+                        404,
+                        {
+                            type:
+                                'ROOM_ERROR',
+
+                            message:
+                                'Room does not exist.'
+                        }
+                    );
+
+                    return;
+                }
+
+
+                sendJson(
+                    res,
+                    200,
+                    {
+                        type:
+                            'ROOM_STATUS',
+
+                        room:
+                            getRoomState(
+                                roomId
+                            )
+                    }
+                );
+
+                return;
+            }
+
+
+            /*
+             * -------------------------------------------------
+             * SELECT CARD
+             * POST /api/select-card
+             *
+             * Body:
+             * {
+             *     "roomId": "ABCD",
+             *     "playerNumber": 1,
+             *     "animalIndex": 3
+             * }
+             * -------------------------------------------------
+             */
+
+            if (
+                req.method === 'POST'
+                && req.url === '/api/select-card'
+            ) {
+
+                try {
+
+                    const data =
+                        await getRequestBody(req);
+
+                    const roomId =
+                        data.roomId
+                            ? data.roomId
+                                .trim()
+                                .toUpperCase()
+                            : '';
+
+                    const playerNumber =
+                        Number(
+                            data.playerNumber
+                        );
+
+                    const animalIndex =
+                        Number(
+                            data.animalIndex
+                        );
+
+
+                    if (
+                        !rooms[roomId]
+                    ) {
+
+                        sendJson(
+                            res,
+                            404,
+                            {
+                                type:
+                                    'ROOM_ERROR',
+
+                                message:
+                                    'Room does not exist.'
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    const room =
+                        rooms[roomId];
+
+
+                    const player =
+                        room.players.find(
+                            (item) => {
+
+                                return (
+                                    item.playerNumber
+                                    === playerNumber
+                                );
+                            }
+                        );
+
+
+                    if (!player) {
+
+                        sendJson(
+                            res,
+                            404,
+                            {
+                                type:
+                                    'ROOM_ERROR',
+
+                                message:
+                                    'Player is not in this room.'
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    player.cardSelection =
+                        animalIndex;
+
+
+                    console.log(
+                        'Player '
+                        + playerNumber
+                        + ' selected a card in room '
+                        + roomId
+                    );
+
+
+                    sendJson(
+                        res,
+                        200,
+                        {
+                            type:
+                                'CARD_SELECTED',
+
+                            room:
+                                getRoomState(
+                                    roomId
+                                )
+                        }
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        'Card selection error:',
+                        error
+                    );
+
+                    sendJson(
+                        res,
+                        500,
+                        {
+                            type:
+                                'ROOM_ERROR',
+
+                            message:
+                                'Unable to select card.'
+                        }
+                    );
+                }
+
+                return;
+            }
+
+
+            /*
+             * -------------------------------------------------
+             * MOVE
+             * POST /api/move
+             *
+             * Body:
+             * {
+             *     "roomId": "ABCD",
+             *     "playerNumber": 1,
+             *     "payload": {...}
+             * }
+             * -------------------------------------------------
+             */
+
+            if (
+                req.method === 'POST'
+                && req.url === '/api/move'
+            ) {
+
+                try {
+
+                    const data =
+                        await getRequestBody(req);
+
+                    const roomId =
+                        data.roomId
+                            ? data.roomId
+                                .trim()
+                                .toUpperCase()
+                            : '';
+
+                    const playerNumber =
+                        Number(
+                            data.playerNumber
+                        );
+
+                    const payload =
+                        data.payload;
+
+
+                    if (
+                        !rooms[roomId]
+                    ) {
+
+                        sendJson(
+                            res,
+                            404,
+                            {
+                                type:
+                                    'ROOM_ERROR',
+
+                                message:
+                                    'Room does not exist.'
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    const room =
+                        rooms[roomId];
+
+
+                    const player =
+                        room.players.find(
+                            (item) => {
+
+                                return (
+                                    item.playerNumber
+                                    === playerNumber
+                                );
+                            }
+                        );
+
+
+                    if (!player) {
+
+                        sendJson(
+                            res,
+                            404,
+                            {
+                                type:
+                                    'ROOM_ERROR',
+
+                                message:
+                                    'Player is not in this room.'
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    room.moves.push(
+                        {
+                            playerNumber:
+                                playerNumber,
+
+                            payload:
+                                payload,
+
+                            timestamp:
+                                Date.now()
+                        }
+                    );
+
+
+                    console.log(
+                        'Move received from Player '
+                        + playerNumber
+                        + ' in room '
+                        + roomId
+                    );
+
+
+                    sendJson(
+                        res,
+                        200,
+                        {
+                            type:
+                                'MOVE_RECEIVED',
+
+                            room:
+                                getRoomState(
+                                    roomId
+                                )
+                        }
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        'Move error:',
+                        error
+                    );
+
+                    sendJson(
+                        res,
+                        500,
+                        {
+                            type:
+                                'ROOM_ERROR',
+
+                            message:
+                                'Unable to process move.'
+                        }
+                    );
+                }
+
+                return;
+            }
+
+
+            /*
+             * Unknown HTTP route
+             */
+
+            sendJson(
+                res,
+                404,
+                {
+                    type:
+                        'NOT_FOUND',
+
+                    message:
+                        'Endpoint not found.'
+                }
+            );
+        }
+    );
+
+
+/*
+ * ---------------------------------------------------------
+ * EXISTING WEBSOCKET SERVER
+ * ---------------------------------------------------------
+ */
+
+const wss =
+    new WebSocket.Server({
+        server
+    });
+
+
 wss.on(
     'connection',
     (ws) => {
 
         ws.isAlive = true;
 
+
         ws.on(
             'pong',
             () => {
+
                 ws.isAlive = true;
             }
         );
+
 
         ws.on(
             'message',
@@ -78,9 +1018,13 @@ wss.on(
                     const data =
                         JSON.parse(message);
 
-                    /**
+
+                    /*
+                     * -----------------------------------------
                      * CREATE ROOM
+                     * -----------------------------------------
                      */
+
                     if (
                         data.type ===
                         'CREATE_ROOM'
@@ -88,6 +1032,7 @@ wss.on(
 
                         const playerName =
                             data.playerName;
+
 
                         if (
                             !playerName
@@ -98,6 +1043,7 @@ wss.on(
                                 JSON.stringify({
                                     type:
                                         'ROOM_ERROR',
+
                                     message:
                                         'Invalid player name.'
                                 })
@@ -106,25 +1052,48 @@ wss.on(
                             return;
                         }
 
+
                         const roomId =
                             generateRoomCode();
 
-                        rooms[roomId] = [];
 
-                        rooms[roomId].push({
-                            ws: ws,
-                            playerName:
-                                playerName
-                        });
+                        rooms[roomId] = {
+
+                            players: [],
+
+                            startingPlayer:
+                                null,
+
+                            moves: []
+                        };
+
+
+                        rooms[roomId].players.push(
+                            {
+                                ws:
+                                    ws,
+
+                                playerName:
+                                    playerName.trim(),
+
+                                playerNumber:
+                                    1,
+
+                                cardSelection:
+                                    null
+                            }
+                        );
+
 
                         ws.roomId =
                             roomId;
 
                         ws.playerName =
-                            playerName;
+                            playerName.trim();
 
                         ws.playerNumber =
                             1;
+
 
                         console.log(
                             playerName
@@ -132,16 +1101,20 @@ wss.on(
                             + roomId
                         );
 
+
                         ws.send(
                             JSON.stringify({
                                 type:
                                     'ROOM_CREATED',
+
                                 roomId:
                                     roomId,
+
                                 playerNumber:
                                     1
                             })
                         );
+
 
                         ws.send(
                             JSON.stringify({
@@ -151,9 +1124,13 @@ wss.on(
                         );
                     }
 
-                    /**
+
+                    /*
+                     * -----------------------------------------
                      * JOIN ROOM
+                     * -----------------------------------------
                      */
+
                     if (
                         data.type ===
                         'JOIN_ROOM'
@@ -167,6 +1144,7 @@ wss.on(
                         const playerName =
                             data.playerName;
 
+
                         if (
                             !roomId
                             || roomId.length !== 4
@@ -176,6 +1154,7 @@ wss.on(
                                 JSON.stringify({
                                     type:
                                         'ROOM_ERROR',
+
                                     message:
                                         'Invalid room code.'
                                 })
@@ -183,6 +1162,7 @@ wss.on(
 
                             return;
                         }
+
 
                         if (
                             !playerName
@@ -193,6 +1173,7 @@ wss.on(
                                 JSON.stringify({
                                     type:
                                         'ROOM_ERROR',
+
                                     message:
                                         'Invalid player name.'
                                 })
@@ -200,6 +1181,7 @@ wss.on(
 
                             return;
                         }
+
 
                         if (
                             !rooms[roomId]
@@ -209,6 +1191,7 @@ wss.on(
                                 JSON.stringify({
                                     type:
                                         'ROOM_ERROR',
+
                                     message:
                                         'Room does not exist.'
                                 })
@@ -217,14 +1200,20 @@ wss.on(
                             return;
                         }
 
+
+                        const room =
+                            rooms[roomId];
+
+
                         if (
-                            rooms[roomId].length >= 2
+                            room.players.length >= 2
                         ) {
 
                             ws.send(
                                 JSON.stringify({
                                     type:
                                         'ROOM_ERROR',
+
                                     message:
                                         'Room is full.'
                                 })
@@ -233,18 +1222,26 @@ wss.on(
                             return;
                         }
 
-                        if (
-                            rooms[roomId].some(
-                                (client) =>
-                                    client.playerName
-                                    === playerName
-                            )
-                        ) {
+
+                        const duplicate =
+                            room.players.some(
+                                (client) => {
+
+                                    return (
+                                        client.playerName
+                                        === playerName
+                                    );
+                                }
+                            );
+
+
+                        if (duplicate) {
 
                             ws.send(
                                 JSON.stringify({
                                     type:
                                         'ROOM_ERROR',
+
                                     message:
                                         'Player name is already in this room.'
                                 })
@@ -253,20 +1250,33 @@ wss.on(
                             return;
                         }
 
-                        rooms[roomId].push({
-                            ws: ws,
-                            playerName:
-                                playerName
-                        });
+
+                        room.players.push(
+                            {
+                                ws:
+                                    ws,
+
+                                playerName:
+                                    playerName.trim(),
+
+                                playerNumber:
+                                    2,
+
+                                cardSelection:
+                                    null
+                            }
+                        );
+
 
                         ws.roomId =
                             roomId;
 
                         ws.playerName =
-                            playerName;
+                            playerName.trim();
 
                         ws.playerNumber =
                             2;
+
 
                         console.log(
                             playerName
@@ -274,49 +1284,58 @@ wss.on(
                             + roomId
                         );
 
-                        /**
-                         * The room now has two players.
-                         */
+
                         if (
-                            rooms[roomId].length
+                            room.players.length
                             === 2
                         ) {
 
                             const player1 =
-                                rooms[roomId][0];
+                                room.players[0];
 
                             const player2 =
-                                rooms[roomId][1];
+                                room.players[1];
+
 
                             player1.ws.send(
                                 JSON.stringify({
                                     type:
                                         'ROOM_READY',
+
                                     roomId:
                                         roomId,
+
                                     player1Name:
                                         player1.playerName,
+
                                     player2Name:
                                         player2.playerName,
+
                                     playerNumber:
                                         1
                                 })
                             );
 
+
                             player2.ws.send(
                                 JSON.stringify({
                                     type:
                                         'ROOM_READY',
+
                                     roomId:
                                         roomId,
+
                                     player1Name:
                                         player1.playerName,
+
                                     player2Name:
                                         player2.playerName,
+
                                     playerNumber:
                                         2
                                 })
                             );
+
 
                             console.log(
                                 'Room '
@@ -326,9 +1345,13 @@ wss.on(
                         }
                     }
 
-                    /**
+
+                    /*
+                     * -----------------------------------------
                      * MOVE
+                     * -----------------------------------------
                      */
+
                     if (
                         data.type ===
                         'MOVE'
@@ -340,24 +1363,43 @@ wss.on(
                         const payload =
                             data.payload;
 
+
                         if (
                             rooms[roomId]
                         ) {
 
                             rooms[roomId]
+                                .moves.push(
+                                    {
+                                        playerNumber:
+                                            ws.playerNumber,
+
+                                        payload:
+                                            payload,
+
+                                        timestamp:
+                                            Date.now()
+                                    }
+                                );
+
+
+                            rooms[roomId]
+                                .players
                                 .forEach(
                                     (client) => {
 
                                         if (
                                             client.ws !== ws
-                                            && client.ws.readyState
-                                            === WebSocket.OPEN
+                                            && client.ws
+                                                .readyState
+                                                === WebSocket.OPEN
                                         ) {
 
                                             client.ws.send(
                                                 JSON.stringify({
                                                     type:
                                                         'MOVE',
+
                                                     payload:
                                                         payload
                                                 })
@@ -378,6 +1420,13 @@ wss.on(
             }
         );
 
+
+        /*
+         * ---------------------------------------------
+         * WebSocket disconnect
+         * ---------------------------------------------
+         */
+
         ws.on(
             'close',
             () => {
@@ -387,15 +1436,28 @@ wss.on(
                     && rooms[ws.roomId]
                 ) {
 
-                    rooms[ws.roomId] =
-                        rooms[ws.roomId].filter(
-                            (client) =>
-                                client.ws !== ws
+                    const room =
+                        rooms[ws.roomId];
+
+
+                    room.players =
+                        room.players.filter(
+                            (client) => {
+
+                                return (
+                                    client.ws !== ws
+                                );
+                            }
                         );
 
+
+                    /*
+                     * If a WebSocket player disconnects,
+                     * keep HTTP players if any remain.
+                     */
+
                     if (
-                        rooms[ws.roomId].length
-                        === 0
+                        room.players.length === 0
                     ) {
 
                         delete rooms[
@@ -408,9 +1470,13 @@ wss.on(
     }
 );
 
-/**
- * Keep-alive ping interval.
+
+/*
+ * ---------------------------------------------------------
+ * WebSocket keep-alive
+ * ---------------------------------------------------------
  */
+
 const interval =
     setInterval(
         () => {
@@ -434,6 +1500,7 @@ const interval =
         30000
     );
 
+
 wss.on(
     'close',
     () => {
@@ -443,6 +1510,13 @@ wss.on(
         );
     }
 );
+
+
+/*
+ * ---------------------------------------------------------
+ * START SERVER
+ * ---------------------------------------------------------
+ */
 
 server.listen(
     PORT,
@@ -454,3 +1528,4 @@ server.listen(
         );
     }
 );
+
